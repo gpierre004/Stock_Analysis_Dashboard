@@ -1,5 +1,7 @@
 import React from 'react';
-import { LineChart, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { LineChart } from 'lucide-react/dist/esm/icons/line-chart';
+import { TrendingUp } from 'lucide-react/dist/esm/icons/trending-up';
+import { TrendingDown } from 'lucide-react/dist/esm/icons/trending-down';
 
 interface PriceChartProps {
   ticker: string;
@@ -29,7 +31,8 @@ export function PriceChart({ ticker, data }: PriceChartProps) {
       
       <div className="space-y-4">
         <div className="h-40 bg-gray-50 rounded-lg flex items-center justify-center">
-          <Activity className="w-8 h-8 text-gray-400" />
+          {/* Use an alternative icon here */}
+          <div className="w-8 h-8 text-gray-400"> {/* Placeholder for icon */} </div>
         </div>
         
         <div className="grid grid-cols-2 gap-4">

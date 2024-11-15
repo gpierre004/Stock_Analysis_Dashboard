@@ -4,80 +4,11 @@ import { PriceChart } from './components/PriceChart';
 import { VolumeAnalysis } from './components/VolumeAnalysis';
 import { TechnicalSignals } from './components/TechnicalSignals';
 import { CorrelationMatrix } from './components/CorrelationMatrix';
-import { GanttChartSquare } from 'lucide-react';
+import { BarChart } from 'lucide-react';
+//import { GanttChartSquare } from 'lucide-react/dist/esm/icons/gantt-chart-square';
 import { useLatestPrices, useVolumeAnalysis, useTechnicalIndicators, useCorrelations } from './hooks/useStockData';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 3,
-      staleTime: 30000,
-    },
-  },
-});
-
-interface StockCardProps {
-  ticker: string;
-}
-
-function StockCard({ ticker }: StockCardProps) {
-  const { data: volumeData, isLoading: volumeLoading, error: volumeError } = useVolumeAnalysis(ticker);
-  const { data: technicalData, isLoading: technicalLoading, error: technicalError } = useTechnicalIndicators(ticker);
-
-  if (volumeLoading || technicalLoading) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="animate-pulse flex space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (volumeError || technicalError) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="text-red-600">Error loading data for {ticker}</div>
-      </div>
-    );
-  }
-
-  if (!volumeData || !technicalData) return null;
-
-  const { volume, avg_volume: avgVolume, vwap } = volumeData;
-  const { current_price: price, price_change_20d: change, sma20 } = technicalData;
-
-  return (
-    <div className="space-y-6">
-      <PriceChart
-        ticker={ticker}
-        data={{
-          price,
-          change,
-          sma20,
-          volume
-        }}
-      />
-      <VolumeAnalysis
-        ticker={ticker}
-        volume={volume}
-        avgVolume={avgVolume}
-        vwap={vwap}
-      />
-      <TechnicalSignals
-        ticker={ticker}
-        support={price * 0.95}
-        resistance={price * 1.05}
-        rsi={50} // Note: Add RSI calculation to backend if needed
-        trend={change > 0 ? 'bullish' : change < 0 ? 'bearish' : 'neutral'}
-      />
-    </div>
-  );
-}
+const queryClient = new QueryClient();
 
 function Dashboard() {
   const { data: latestPrices, isLoading: pricesLoading, error: pricesError } = useLatestPrices();
@@ -95,9 +26,7 @@ function Dashboard() {
   if (pricesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-        </div>
+        <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
@@ -127,6 +56,38 @@ function Dashboard() {
         )}
       </main>
     </div>
+  );
+}
+
+function StockCard({ ticker }: { ticker: string }) {
+  const { data: volumeData } = useVolumeAnalysis(ticker);
+  const { data: technicalData } = useTechnicalIndicators(ticker);
+
+  if (!volumeData || !technicalData) return null;
+
+  const { volume, avg_volume: avgVolume, vwap } = volumeData;
+  const { current_price: price, price_change_20d: change, sma20 } = technicalData;
+
+  return (
+    <>
+      <PriceChart
+        ticker={ticker}
+        data={{ price, change, sma20, volume }}
+      />
+      <VolumeAnalysis
+        ticker={ticker}
+        volume={volume}
+        avgVolume={avgVolume}
+        vwap={vwap}
+      />
+      <TechnicalSignals
+        ticker={ticker}
+        support={price * 0.95}
+        resistance={price * 1.05}
+        rsi={50}
+        trend={change > 0 ? 'bullish' : change < 0 ? 'bearish' : 'neutral'}
+      />
+    </>
   );
 }
 

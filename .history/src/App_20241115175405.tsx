@@ -19,10 +19,10 @@ const queryClient = new QueryClient({
 interface StockCardProps {
   ticker: string;
 }
-
+/*
 function StockCard({ ticker }: StockCardProps) {
   const { data: volumeData, isLoading: volumeLoading, error: volumeError } = useVolumeAnalysis(ticker);
-  const { data: technicalData, isLoading: technicalLoading, error: technicalError } = useTechnicalIndicators(ticker);
+  //const { data: technicalData, isLoading: technicalLoading, error: technicalError } = useTechnicalIndicators(ticker);
 
   if (volumeLoading || technicalLoading) {
     return (
@@ -37,7 +37,7 @@ function StockCard({ ticker }: StockCardProps) {
       </div>
     );
   }
-
+*/
   if (volumeError || technicalError) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-6">

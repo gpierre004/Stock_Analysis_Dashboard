@@ -1,5 +1,7 @@
 import React from 'react';
-import { Target, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Target } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import { ArrowDownRight } from 'lucide-react';
 
 interface TechnicalSignalsProps {
   ticker: string;

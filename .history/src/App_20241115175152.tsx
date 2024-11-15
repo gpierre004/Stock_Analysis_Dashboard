@@ -22,7 +22,7 @@ interface StockCardProps {
 
 function StockCard({ ticker }: StockCardProps) {
   const { data: volumeData, isLoading: volumeLoading, error: volumeError } = useVolumeAnalysis(ticker);
-  const { data: technicalData, isLoading: technicalLoading, error: technicalError } = useTechnicalIndicators(ticker);
+  //const { data: technicalData, isLoading: technicalLoading, error: technicalError } = useTechnicalIndicators(ticker);
 
   if (volumeLoading || technicalLoading) {
     return (
@@ -45,7 +45,7 @@ function StockCard({ ticker }: StockCardProps) {
       </div>
     );
   }
-
+/*
   if (!volumeData || !technicalData) return null;
 
   const { volume, avg_volume: avgVolume, vwap } = volumeData;
@@ -78,7 +78,7 @@ function StockCard({ ticker }: StockCardProps) {
     </div>
   );
 }
-
+*/
 function Dashboard() {
   const { data: latestPrices, isLoading: pricesLoading, error: pricesError } = useLatestPrices();
   const tickers = latestPrices?.map(price => price.CompanyTicker) || [];

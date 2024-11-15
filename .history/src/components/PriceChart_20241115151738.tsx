@@ -1,5 +1,8 @@
 import React from 'react';
-import { LineChart, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { BarChart } from 'lucide-react/dist/esm/icons/bar-chart'; // Example alternative
+import { TrendingUp } from 'lucide-react/dist/esm/icons/trending-up';
+import { TrendingDown } from 'lucide-react/dist/esm/icons/trending-down';
+
 
 interface PriceChartProps {
   ticker: string;
@@ -18,7 +21,8 @@ export function PriceChart({ ticker, data }: PriceChartProps) {
     <div className="bg-white rounded-lg shadow-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <LineChart className="w-5 h-5 text-blue-600" />
+          {/* Use an alternative icon here */}
+          <BarChart className="w-5 h-5 text-blue-600" />
           <h3 className="text-lg font-semibold">{ticker}</h3>
         </div>
         <div className={`flex items-center gap-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
@@ -29,7 +33,8 @@ export function PriceChart({ ticker, data }: PriceChartProps) {
       
       <div className="space-y-4">
         <div className="h-40 bg-gray-50 rounded-lg flex items-center justify-center">
-          <Activity className="w-8 h-8 text-gray-400" />
+          {/* Use an alternative icon here */}
+          <BarChart className="w-8 h-8 text-gray-400" />
         </div>
         
         <div className="grid grid-cols-2 gap-4">
