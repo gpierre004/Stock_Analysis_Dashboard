@@ -1,3 +1,4 @@
+// src/App.tsx
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -11,7 +12,7 @@ const queryClient = new QueryClient({
       staleTime: 30000,
       refetchOnWindowFocus: false,
       refetchOnMount: true,
-      onError: (error) => {
+      onError: (error: any) => {
         console.error('Query error:', error);
       },
     },
@@ -24,7 +25,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/portfolio" element={<Portfolio />} /> {/* Add the new route  */}
+          <Route path="/portfolio" element={<Portfolio />} /> {/* Add the new route */}
         </Routes>
       </Router>
     </QueryClientProvider>
