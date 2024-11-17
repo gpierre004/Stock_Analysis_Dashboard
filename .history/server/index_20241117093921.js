@@ -15,7 +15,7 @@ app.use(express.json());
 // Routes
 app.use('/api', stockAnalysisRoutes);
 app.use('/api/portfolio', portfolioRoutes); // Use the portfolio routes
-app.use('/stock-prices', updateStockPriceRoutes);
+router.use('/stock-prices', updateStockPriceRoutes);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

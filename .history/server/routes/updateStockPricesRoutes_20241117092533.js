@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import express from 'express';
 import { updateStockPrices } from '../services/priceUpdater.js';
 
@@ -13,7 +12,10 @@ router.get('/stock-prices', async (req, res) => {
       res.status(500).send('An error occurred while updating stock prices');
     }
   });
-
-
+  const port = process.env.PORT || 3000;
+  // Start the server
+  router.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 
   export default router;

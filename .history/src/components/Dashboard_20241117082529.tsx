@@ -27,7 +27,7 @@ export const Dashboard = () => {
 
   const handleUpdatePrices = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/stock-prices', {
+      const response = await fetch('http://localhost:3000/api/update-stock-prices', {
         method: 'GET', // Assuming the endpoint is a GET request
       });
       if (!response.ok) {

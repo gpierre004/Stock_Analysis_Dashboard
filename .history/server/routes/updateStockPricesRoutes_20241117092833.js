@@ -14,6 +14,11 @@ router.get('/stock-prices', async (req, res) => {
     }
   });
 
-
+  
+  const PORT = process.env.PORT || 3000;
+  // Start the server
+  router.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 
   export default router;

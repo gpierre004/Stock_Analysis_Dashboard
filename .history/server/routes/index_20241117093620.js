@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import updateStockPriceRoutes from './updateStockPricesRoutes.js';
+import upstockPriceRoutes from './updateStockPricesRoutes.js';
 //import transactionRoutes from './transactionRoutes.js';
 
 
