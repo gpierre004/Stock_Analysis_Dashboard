@@ -1,7 +1,7 @@
 // src/App.tsx
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Portfolio from './components/Portfolio'; // Import the Portfolio component
 
@@ -23,10 +23,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/portfolio" element={<Portfolio />} /> {/* Add the new route */}
-        </Routes>
+        <Switch>
+          <Route path="/" exact component={Dashboard} />
+          <Route path="/portfolio" component={Portfolio} /> {/* Add the new route */}
+        </Switch>
       </Router>
     </QueryClientProvider>
   );

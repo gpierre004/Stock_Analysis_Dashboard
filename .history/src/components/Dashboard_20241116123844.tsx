@@ -5,7 +5,7 @@ import LoadingCard from './common/LoadingCard';
 import ErrorCard from './common/ErrorCard';
 import { CorrelationMatrix } from './CorrelationMatrix';
 import { useLatestPrices, useCorrelations } from '../hooks/useStockData';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link } from 'react-router-dom';
 
 export const Dashboard = () => {
   const { 
@@ -38,7 +38,7 @@ export const Dashboard = () => {
   if (pricesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingCard message={''} />
+        <LoadingCard />
       </div>
     );
   }
@@ -52,19 +52,13 @@ export const Dashboard = () => {
   }
 
   return (
+    
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <GanttChartSquare className="w-8 h-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Stock Analysis Dashboard</h1>
-            </div>
-            <nav>
-              <Link to="/portfolio" className="text-blue-600 hover:underline">
-                Portfolio
-              </Link>
-            </nav>
+          <div className="flex items-center gap-2">
+            <GanttChartSquare className="w-8 h-8 text-blue-600" />
+            <h1 className="text-2xl font-bold text-gray-900">Stock Analysis Dashboard</h1>
           </div>
         </div>
       </header>

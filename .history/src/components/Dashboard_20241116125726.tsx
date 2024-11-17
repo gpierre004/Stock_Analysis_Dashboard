@@ -38,7 +38,7 @@ export const Dashboard = () => {
   if (pricesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingCard message={''} />
+        <LoadingCard />
       </div>
     );
   }

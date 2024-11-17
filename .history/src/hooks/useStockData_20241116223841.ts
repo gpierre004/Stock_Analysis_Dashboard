@@ -37,7 +37,6 @@ interface PortfolioStock {
   market_value: number;
   total_profit_loss: number;
   current_quantity : number;
-  roi_percentage : number;
 }
 
 // Error handling with specific error types

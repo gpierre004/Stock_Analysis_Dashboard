@@ -35,9 +35,7 @@ interface PortfolioStock {
   ticker: string;
   total_invested: number;
   market_value: number;
-  total_profit_loss: number;
-  current_quantity : number;
-  roi_percentage : number;
+  totalprofit_loss: number;
 }
 
 // Error handling with specific error types

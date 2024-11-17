@@ -30,16 +30,6 @@ interface CorrelationData {
   correlation: number;
 }
 
-//Portfolio-related
-interface PortfolioStock {
-  ticker: string;
-  total_invested: number;
-  market_value: number;
-  total_profit_loss: number;
-  current_quantity : number;
-  roi_percentage : number;
-}
-
 // Error handling with specific error types
 class APIError extends Error {
   constructor(public status: number, message: string) {
@@ -141,19 +131,3 @@ export const useCorrelations = (tickers: string[]) => {
   });
 };
 
-// Porfolio related
-export const usePortfolioData = () => {
-  return useQuery<PortfolioStock[], Error>({
-    queryKey: ['portfolioData'],
-    queryFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/portfolio`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch portfolio data');
-      }
-      const data = await response.json();
-      console.log('Portfolio Data:', data); // Log the data
-      return data;
-    },
-    staleTime: 30000,
-  });
-};
