@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S&P 500 Stock Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>S&P 500 Stock Analysis</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="user-transactions.html">User & Transactions</a>
+            <a href="portfolio-performance.html">Portfolio Performance</a>
+            <a href="top_performers.html">Top Performers</a>
+            <a href="#" id="logoutButton">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <div class="existing-controls">
+            <button id="refreshButton">Refresh S&P 500 List</button>
+            <button id="updateStockPrices">Update Stock Prices</button>
+            <button id="updateWatchList">Update Watch List</button>
+            <button id="cleanupWatchList">Clean Up Watch List</button>
+            <button id="updateWatchListButton">Update Watch List</button>
+            <button id="getWatchListButton">Refresh Watch List</button>
+            <button id="resetFiltersButton">Reset Filters</button>
+            <button id="applyFiltersButton">Apply Filters</button>
+        </div>
+        <div id="message"></div>
+        <div id="watchListContainer">
+            <div id="watchListFilters"></div>
+            <div id="watchList"></div>
+        </div>
+
+        <div id="stockModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle"></h2>
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </main>
+    <script>
+        const apiBaseUrl = '/api';
+        let watchListData = [];
+        let sortColumn = '';
+        let sortDirection = 'asc';
+        let filters = {};
+        let areFiltersActive = false;
+        
+        async function makeRequest(endpoint, method = 'GET', body = null) {
+            try {
+                const response = await fetch(`${apiBaseUrl}${endpoint}`, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: body ? JSON.stringify(body) : null,
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showMessage(message, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = type;
+        }
+
+        function createFilterInputs() {
+            const filterContainer = document.getElementById('watchListFilters');
+            filterContainer.innerHTML = `
+                <input type="text" id="filterTicker" placeholder="Filter Ticker">
+                <input type="text" id="filterCompany" placeholder="Filter Company">
+                <input type="number" id="filterPrice" placeholder="Min Price">
+                <input type="number" id="filterPercentBelow" placeholder="Min % Below High">
+            `;
+        }
+
+        function getFilters() {
+            return {
+                ticker: document.getElementById('filterTicker').value.toLowerCase(),
+                company: document.getElementById('filterCompany').value.toLowerCase(),
+                price: parseFloat(document.getElementById('filterPrice').value) || 0,
+                percentBelow: parseFloat(document.getElementById('filterPercentBelow').value) || 0
+            };
+        }
+
+        function applyFilters() {
+            filters = getFilters();
+            areFiltersActive = true;
+            displayWatchList(watchListData);
+        }
+
+        function resetFilters() {
+            document.getElementById('filterTicker').value = '';
+            document.getElementById('filterCompany').value = '';
+            document.getElementById('filterPrice').value = '';
+            document.getElementById('filterPercentBelow').value = '';
+            filters = {};
+            areFiltersActive = false;
+            displayWatchList(watchListData);
+        }
+
+        function displayWatchList(watchList) {
+    watchListData = watchList;
+    const watchListDiv = document.getElementById('watchList');
+    if (!watchList || watchList.length === 0) {
+        watchListDiv.innerHTML = '<p>No items in the watch list.</p>';
+        return;
+    }
+
+    let displayList = watchList;
+    if (areFiltersActive) {
+        displayList = watchList.filter(item =>
+            item.CompanyTicker?.toLowerCase().includes(filters.ticker || '') &&
+            item.Company?.name?.toLowerCase().includes(filters.company || '') &&
+            (item.currentPrice || 0) >= (filters.price || 0) &&
+            (item.percentBelow52WeekHigh || 0) >= (filters.percentBelow || 0)
+        );
+    }
+
+    if (sortColumn) {
+        displayList.sort((a, b) => {
+            let valueA = sortColumn === 'Company' ? a.Company?.name : a[sortColumn];
+            let valueB = sortColumn === 'Company' ? b.Company?.name : b[sortColumn];
+            valueA = typeof valueA === 'string' ? valueA.toLowerCase() : valueA || 0;
+            valueB = typeof valueB === 'string' ? valueB.toLowerCase() : valueB || 0;
+            if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+            if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    let html = '<div class="card-container">';
+    displayList.forEach(item => {
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <h3>${item.CompanyTicker || 'N/A'}</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Company:</strong> ${item.Company?.name || 'N/A'}</p>
+                    <p><strong>Sector:</strong> ${item.Company?.sector || 'N/A'}</p>
+                    <p class="price"><strong>Current Price:</strong> ${item.currentPrice ? item.currentPrice.toFixed(2) : 'N/A'}</p>
+                    <p class="price"><strong>Price When Added:</strong> ${item.priceWhenAdded ? item.priceWhenAdded.toFixed(2) : 'N/A'}</p>
+                    <p><strong>52 Week High:</strong> ${item.weekHigh52 ? item.weekHigh52.toFixed(2) : 'N/A'}</p>
+                    <p class="percent-below"><strong>% Below High:</strong> ${item.percentBelow52WeekHigh ? item.percentBelow52WeekHigh.toFixed(2) : 'N/A'}%</p>
+                    <p class="date-added"><strong>Date Added:</strong> ${item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : 'N/A'}</p>
+                    <p class="price-change"><strong>Price Change:</strong> ${item.priceChange ? item.priceChange.toFixed(2) : '0.00'}%</p>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    watchListDiv.innerHTML = html;
+}
+
+        function getSortIndicator(column) {
+            if (sortColumn === column) {
+                return sortDirection === 'asc' ? '▲' : '▼';
+            }
+            return '';
+        }
+
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            displayWatchList(watchListData);
+        }
+
+        async function getWatchList() {
+            const watchList = await makeRequest('/watch-list');
+            if (watchList) displayWatchList(watchList);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createFilterInputs();
+            getWatchList();
+
+            document.getElementById('refreshButton').addEventListener('click', async () => {
+                const result = await makeRequest('/companies/refresh', 'POST');
+                if (result) showMessage(result.message);
+            });
+
+            // Update Stock Prices button
+            document.getElementById('updateStockPrices').addEventListener('click', async () => {
+                try {
+                    console.log('Update Stock Prices button clicked');
+                    const response = await fetch('/api/stock-prices/update', {  // Remove the double 'api'
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    console.log('Update result:', result);
+                    alert('Stock price update started successfully');
+                } catch (error) {
+                    console.error('Error updating stock prices:', error);
+                    alert('Error updating stock prices');
+                }
+            });
+
+            document.getElementById('updateWatchListButton').addEventListener('click', async () => {
+                const result = await makeRequest('/watch-list/update', 'POST');
+                if (result) {
+                    showMessage(result.message);
+                    getWatchList();
+                }
+            });
+
+            // Update the watchlist button handler
+            document.getElementById('updateWatchList').addEventListener('click', async () => {
+                try {
+                    console.log('Update Watch List button clicked');
+                    const response = await fetch('/api/watch-list/update', {  // Remove the double 'api'
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    console.log('Update result:', result);
+                    alert('Watch list updated successfully');
+                } catch (error) {
+                    console.error('Error updating watch list:', error);
+                    alert('Error updating watch list');
+                }
+            });
+
+            // Clean Up Watch List button
+            document.getElementById('cleanupWatchList').addEventListener('click', async () => {
+                console.log('Clean Up Watch List button clicked');
+                try {
+                    const result = await makeRequest('/api/watch-list/cleanup', 'POST');
+                    alert('Watch list cleaned up successfully');
+                    console.log('Cleanup result:', result);
+                } catch (error) {
+                    alert('Error cleaning up watch list');
+                }
+            });
+
+            document.getElementById('getWatchListButton').addEventListener('click', getWatchList);
+            document.getElementById('resetFiltersButton').addEventListener('click', resetFilters);
+            document.getElementById('applyFiltersButton').addEventListener('click', applyFilters);
+
+            const logoutButton = document.getElementById('logoutButton');
+            logoutButton.addEventListener('click', handleLogout);
+
+            checkAuthentication();
+        });
+
+        // Refresh Company List button
+        document.getElementById('refreshCompanyList').addEventListener('click', async () => {
+                console.log('Refresh Company List button clicked');
+                try {
+                    const result = await makeRequest('/api/companies/refresh', 'POST');
+                    alert('Company list refreshed successfully');
+                    console.log('Refresh result:', result);
+                } catch (error) {
+                    alert('Error refreshing company list');
+                }
+            });
+
+        function checkAuthentication() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
