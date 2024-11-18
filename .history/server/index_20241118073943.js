@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { syncDatabase } from './models/index.js';
 import logger from './utils/logger.js';
-import { startAllJobs } from './services/dataUpdate.js';
 
 // Routes imports
 import watchlistRoutes from './routes/watchlist.js';
@@ -44,10 +43,6 @@ async function startServer() {
   try {
     // Synchronize database models
     await syncDatabase();
-
-    // Start cron jobs
-    startAllJobs();
-    logger.info('Cron jobs initialized for stock price and watchlist updates');
 
     // Start Express server
     app.listen(PORT, () => {
