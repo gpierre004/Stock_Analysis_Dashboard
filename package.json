@@ -28,6 +28,7 @@
     "react-router-dom": "^6.28.0",
     "sequelize": "^6.37.5",
     "shadcn-ui": "^0.9.3",
+    "winston": "^3.17.0",
     "yahoo-finance2": "^2.13.2"
   },
   "devDependencies": {
