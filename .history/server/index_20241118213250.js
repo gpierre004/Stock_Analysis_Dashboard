@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { sequelize, syncDatabase } from './models/index.js';
+import { sequelize } from './database/db.js';
 import logger from './utils/logger.js';
 
 // Import routes
@@ -9,7 +9,6 @@ import stockPricesRoutes from './routes/stockPrices.js';
 import watchlistRoutes from './routes/watchlist.js';
 import stockAnalysisRoutes from './routes/stockAnalysis.js';
 import updateStockPricesRoutes from './routes/updateStockPricesRoutes.js';
-import transactionRoutes from './routes/transactionRoutes.js';
 
 // Import scheduled tasks
 import { scheduleWatchlistPriceUpdates } from './services/scheduledTasks.js';
@@ -22,20 +21,22 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/', stockAnalysisRoutes); // Do not remove this line it's needed to load the dashboard
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/stock-prices', stockPricesRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/stock-analysis', stockAnalysisRoutes);
 app.use('/api/update-stock-prices', updateStockPricesRoutes);
-app.use('/api/transactions', transactionRoutes);
 
-// Database connection and synchronization
+// Database connection
 try {
-  await syncDatabase();
+  await sequelize.authenticate();
+  logger.info('Database connection established successfully.');
+  
+  // Sync models (optional, be cautious in production)
+  await sequelize.sync({ alter: true });
+  logger.info('Database models synchronized.');
 } catch (error) {
-  logger.error('Failed to synchronize database:', error);
-  process.exit(1);
+  logger.error('Unable to connect to the database:', error);
 }
 
 // Initialize scheduled tasks

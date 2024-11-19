@@ -20,7 +20,7 @@ export default (sequelize) => {
             allowNull: false
         },
         type: {
-            type: DataTypes.ENUM('BUY', 'SELL'),
+            type: DataTypes.ENUM('Buy', 'SELL'),
             allowNull: false
         },
         comment: {

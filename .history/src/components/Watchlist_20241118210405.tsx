@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import LoadingCard from './common/LoadingCard';
 import ErrorCard from './common/ErrorCard';
-import StockCard from './StockCard';
 import { GanttChartSquare } from 'lucide-react';
 
 interface WatchlistItem {
@@ -12,8 +11,6 @@ interface WatchlistItem {
     priceChange: number | null;
     dateAdded: string;
     reason: string;
-    weekHigh52: number | null;
-    percentBelow52WeekHigh: number | null;
     Company: {
         name: string;
         sector: string;
@@ -26,7 +23,6 @@ export const Watchlist = () => {
     const [error, setError] = React.useState<string | null>(null);
     const [isUpdating, setIsUpdating] = React.useState(false);
     const [isRefreshing, setIsRefreshing] = React.useState(false);
-    const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null);
 
     const fetchWatchlist = async () => {
         try {
@@ -110,10 +106,6 @@ export const Watchlist = () => {
         }
     };
 
-    const handleRowClick = (ticker: string) => {
-        setSelectedTicker(selectedTicker === ticker ? null : ticker);
-    };
-
     React.useEffect(() => {
         fetchWatchlist();
     }, []);
@@ -142,11 +134,6 @@ export const Watchlist = () => {
         if (change === null) return 'N/A';
         const sign = change >= 0 ? '+' : '';
         return `${sign}${change.toFixed(2)}%`;
-    };
-
-    const formatPercentBelow52WeekHigh = (percent: number | null): string => {
-        if (percent === null) return 'N/A';
-        return `-${percent.toFixed(2)}%`;
     };
 
     return (
@@ -193,56 +180,40 @@ export const Watchlist = () => {
                 {watchlist.length === 0 ? (
                     <div className="text-center text-gray-500">No stocks in watchlist</div>
                 ) : (
-                    <div className="space-y-6">
-                        <div className="bg-white shadow overflow-hidden rounded-lg">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Price</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price Change</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Below 52W High</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                    <div className="bg-white shadow overflow-hidden rounded-lg">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Price</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price Change</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {watchlist.map((item) => (
+                                    <tr key={item.CompanyTicker}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.CompanyTicker}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {item.Company?.name || 'N/A'}
+                                            <div className="text-xs text-gray-400">{item.Company?.sector || 'N/A'}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {formatPrice(item.currentPrice)}
+                                        </td>
+                                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${item.priceChange !== null ? (item.priceChange >= 0 ? 'text-green-600' : 'text-red-600') : 'text-gray-500'}`}>
+                                            {formatPriceChange(item.priceChange)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-500">{item.reason || 'N/A'}</td>
                                     </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {watchlist.map((item) => (
-                                        <tr 
-                                            key={item.CompanyTicker}
-                                            onClick={() => handleRowClick(item.CompanyTicker)}
-                                            className={`cursor-pointer hover:bg-gray-50 ${selectedTicker === item.CompanyTicker ? 'bg-blue-50' : ''}`}
-                                        >
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.CompanyTicker}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {item.Company?.name || 'N/A'}
-                                                <div className="text-xs text-gray-400">{item.Company?.sector || 'N/A'}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {formatPrice(item.currentPrice)}
-                                            </td>
-                                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${item.priceChange !== null ? (item.priceChange >= 0 ? 'text-green-600' : 'text-red-600') : 'text-gray-500'}`}>
-                                                {formatPriceChange(item.priceChange)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                                                {formatPercentBelow52WeekHigh(item.percentBelow52WeekHigh)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : 'N/A'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">{item.reason || 'N/A'}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {selectedTicker && (
-                            <div className="mt-6">
-                                <StockCard ticker={selectedTicker} />
-                            </div>
-                        )}
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
             </main>

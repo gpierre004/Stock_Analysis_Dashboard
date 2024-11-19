@@ -9,30 +9,10 @@ const RECOVERY_THRESHOLD = 0.70; // Stock should be at least 70% of its 52-week 
 const VOLUME_INCREASE_THRESHOLD = 1.5; // 50% increase in volume compared to average
 const WATCH_LIST_THRESHOLD = 0.25; // 25% below 52-week high
 const TREND_PERIOD = 1080; // 1080-day moving average for long-term trend
-const DEFAULT_USER_ID = 3; // Default user ID for system-generated entries
-
-async function ensureDefaultUser() {
-  try {
-    let defaultUser = await User.findByPk(DEFAULT_USER_ID);
-    if (!defaultUser) {
-      defaultUser = await User.create({
-        id: DEFAULT_USER_ID,
-        username: 'gbeljour',
-        email: 'gbeljour@me.com',
-        password: '1215' // You might want to use a more secure password
-      });
-      logger.info('Created default user successfully');
-    }
-    return defaultUser;
-  } catch (error) {
-    logger.error('Error ensuring default user: ' + error.message);
-    throw new Error('Unable to ensure default user exists');
-  }
-}
+const DEFAULT_USER_ID = 1; // Default user ID for system-generated entries
 
 export async function updateWatchListPriceChange() {
   try {
-    await ensureDefaultUser();
     const watchListItems = await WatchList.findAll({
       where: { UserId: DEFAULT_USER_ID },
       attributes: [
@@ -57,7 +37,6 @@ export async function updateWatchListPriceChange() {
 
 export async function getWatchList() {
   try {
-    await ensureDefaultUser();
     const watchList = await WatchList.findAll({
       where: { UserId: DEFAULT_USER_ID },
       include: [{ model: Company, attributes: ['name', 'sector'] }],
@@ -130,9 +109,6 @@ async function addToWatchList(potentialStocks) {
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
   try {
-    // Ensure default user exists before proceeding
-    await ensureDefaultUser();
-
     // First, remove stocks older than 90 days for the default user
     await WatchList.destroy({
       where: {
@@ -140,6 +116,17 @@ async function addToWatchList(potentialStocks) {
         dateAdded: { [Op.lt]: ninetyDaysAgo }
       }
     });
+
+    // Ensure default user exists
+    let defaultUser = await User.findByPk(DEFAULT_USER_ID);
+    if (!defaultUser) {
+      defaultUser = await User.create({
+        id: DEFAULT_USER_ID,
+        username: 'system',
+        email: 'system@example.com',
+        password: 'system' // You might want to use a more secure password
+      });
+    }
 
     for (const stock of potentialStocks) {
       // Check if stock was added in the last 90 days for the default user
@@ -189,10 +176,9 @@ async function addToWatchList(potentialStocks) {
 
 export async function updateWatchListPrices() {
   try {
-    await ensureDefaultUser();
     const watchListItems = await WatchList.findAll({
       where: { UserId: DEFAULT_USER_ID },
-      attributes: ['id', 'CompanyTicker', 'priceWhenAdded']
+      attributes: ['id', 'CompanyTicker']
     });
 
     for (const item of watchListItems) {
@@ -203,14 +189,8 @@ export async function updateWatchListPrices() {
       });
 
       if (latestPrice) {
-        const currentPrice = latestPrice.close;
-        const priceChange = ((currentPrice - item.priceWhenAdded) / item.priceWhenAdded * 100).toFixed(2);
-        
         await WatchList.update(
-          { 
-            currentPrice,
-            priceChange
-          },
+          { currentPrice: latestPrice.close },
           { where: { id: item.id } }
         );
       }
@@ -226,7 +206,6 @@ export async function updateWatchListPrices() {
 
 export async function cleanupWatchList() {
   try {
-    await ensureDefaultUser();
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - DAYS_THRESHOLD);
 
@@ -247,9 +226,6 @@ export async function cleanupWatchList() {
 
 export async function refreshWatchList() {
   try {
-    // Ensure default user exists before proceeding with refresh
-    await ensureDefaultUser();
-    
     const potentialStocks = await getPotentialStocks();
     const addedCount = await addToWatchList(potentialStocks);
     

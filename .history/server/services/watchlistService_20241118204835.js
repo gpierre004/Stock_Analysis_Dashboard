@@ -9,7 +9,7 @@ const RECOVERY_THRESHOLD = 0.70; // Stock should be at least 70% of its 52-week 
 const VOLUME_INCREASE_THRESHOLD = 1.5; // 50% increase in volume compared to average
 const WATCH_LIST_THRESHOLD = 0.25; // 25% below 52-week high
 const TREND_PERIOD = 1080; // 1080-day moving average for long-term trend
-const DEFAULT_USER_ID = 3; // Default user ID for system-generated entries
+const DEFAULT_USER_ID = 1; // Default user ID for system-generated entries
 
 async function ensureDefaultUser() {
   try {
@@ -17,9 +17,9 @@ async function ensureDefaultUser() {
     if (!defaultUser) {
       defaultUser = await User.create({
         id: DEFAULT_USER_ID,
-        username: 'gbeljour',
-        email: 'gbeljour@me.com',
-        password: '1215' // You might want to use a more secure password
+        username: 'system',
+        email: 'system@example.com',
+        password: 'system123' // You might want to use a more secure password
       });
       logger.info('Created default user successfully');
     }
@@ -192,7 +192,7 @@ export async function updateWatchListPrices() {
     await ensureDefaultUser();
     const watchListItems = await WatchList.findAll({
       where: { UserId: DEFAULT_USER_ID },
-      attributes: ['id', 'CompanyTicker', 'priceWhenAdded']
+      attributes: ['id', 'CompanyTicker']
     });
 
     for (const item of watchListItems) {
@@ -203,14 +203,8 @@ export async function updateWatchListPrices() {
       });
 
       if (latestPrice) {
-        const currentPrice = latestPrice.close;
-        const priceChange = ((currentPrice - item.priceWhenAdded) / item.priceWhenAdded * 100).toFixed(2);
-        
         await WatchList.update(
-          { 
-            currentPrice,
-            priceChange
-          },
+          { currentPrice: latestPrice.close },
           { where: { id: item.id } }
         );
       }

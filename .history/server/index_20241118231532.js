@@ -28,7 +28,7 @@ app.use('/api/stock-prices', stockPricesRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/stock-analysis', stockAnalysisRoutes);
 app.use('/api/update-stock-prices', updateStockPricesRoutes);
-app.use('/api/transactions', transactionRoutes);
+app.use('api/transactions', addTransaction,bulkUploadTransactions);
 
 // Database connection and synchronization
 try {

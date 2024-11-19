@@ -9,7 +9,7 @@ import stockPricesRoutes from './routes/stockPrices.js';
 import watchlistRoutes from './routes/watchlist.js';
 import stockAnalysisRoutes from './routes/stockAnalysis.js';
 import updateStockPricesRoutes from './routes/updateStockPricesRoutes.js';
-import transactionRoutes from './routes/transactionRoutes.js';
+import { addTransaction } from './services/transactionService.js';
 
 // Import scheduled tasks
 import { scheduleWatchlistPriceUpdates } from './services/scheduledTasks.js';
@@ -28,7 +28,6 @@ app.use('/api/stock-prices', stockPricesRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/stock-analysis', stockAnalysisRoutes);
 app.use('/api/update-stock-prices', updateStockPricesRoutes);
-app.use('/api/transactions', transactionRoutes);
 
 // Database connection and synchronization
 try {

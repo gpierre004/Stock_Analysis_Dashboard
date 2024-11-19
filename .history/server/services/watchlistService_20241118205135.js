@@ -19,7 +19,7 @@ async function ensureDefaultUser() {
         id: DEFAULT_USER_ID,
         username: 'gbeljour',
         email: 'gbeljour@me.com',
-        password: '1215' // You might want to use a more secure password
+        password: 'system123' // You might want to use a more secure password
       });
       logger.info('Created default user successfully');
     }
@@ -192,7 +192,7 @@ export async function updateWatchListPrices() {
     await ensureDefaultUser();
     const watchListItems = await WatchList.findAll({
       where: { UserId: DEFAULT_USER_ID },
-      attributes: ['id', 'CompanyTicker', 'priceWhenAdded']
+      attributes: ['id', 'CompanyTicker']
     });
 
     for (const item of watchListItems) {
@@ -203,14 +203,8 @@ export async function updateWatchListPrices() {
       });
 
       if (latestPrice) {
-        const currentPrice = latestPrice.close;
-        const priceChange = ((currentPrice - item.priceWhenAdded) / item.priceWhenAdded * 100).toFixed(2);
-        
         await WatchList.update(
-          { 
-            currentPrice,
-            priceChange
-          },
+          { currentPrice: latestPrice.close },
           { where: { id: item.id } }
         );
       }

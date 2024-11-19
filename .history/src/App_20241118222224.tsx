@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Dashboard } from './components/Dashboard';
-import Portfolio from './components/Portfolio';
+import { Portfolio } from './components/Portfolio';
 import { Watchlist } from './components/Watchlist';
 import TransactionForm from './components/TransactionForm';
 import { 

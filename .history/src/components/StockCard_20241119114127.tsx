@@ -38,7 +38,7 @@ export const StockCard = ({ ticker }: StockCardProps) => {
   } = useTechnicalIndicators(ticker);
 
   if (volumeLoading || technicalLoading) {
-    return <LoadingCard message={`Loading data for ${ticker}...`} />;
+    return <LoadingCard />;
   }
 
   if (isVolumeError || isTechnicalError) {

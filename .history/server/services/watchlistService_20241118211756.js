@@ -203,14 +203,8 @@ export async function updateWatchListPrices() {
       });
 
       if (latestPrice) {
-        const currentPrice = latestPrice.close;
-        const priceChange = ((currentPrice - item.priceWhenAdded) / item.priceWhenAdded * 100).toFixed(2);
-        
         await WatchList.update(
-          { 
-            currentPrice,
-            priceChange
-          },
+          { currentPrice: latestPrice.close },
           { where: { id: item.id } }
         );
       }
