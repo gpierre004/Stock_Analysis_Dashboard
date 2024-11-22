@@ -69,14 +69,15 @@ export async function bulkUploadTransactions(transactions) {
     }
 }
 
-export async function getRecentTransactions(limit = 10) {
+export async function getRecentTransactions(portfolioId, limit = 10) {
     try {
         const transactions = await Transaction.findAll({
+            where: { portfolio_id: portfolioId },
             order: [['purchase_date', 'DESC']],
             limit: limit
         });
         
-        logger.info(`Retrieved ${transactions.length} recent transactions`);
+        logger.info(`Retrieved ${transactions.length} recent transactions for portfolio ${portfolioId}`);
         return transactions;
     } catch (error) {
         logger.error('Error fetching recent transactions:', error);

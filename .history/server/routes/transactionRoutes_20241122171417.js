@@ -21,17 +21,6 @@ router.get('/template', (req, res) => {
     }
 });
 
-// Get recent transactions (all portfolios)
-router.get('/recent', async (req, res) => {
-    try {
-        const transactions = await getRecentTransactions();
-        res.json(transactions);
-    } catch (error) {
-        console.error('Error fetching recent transactions:', error);
-        res.status(400).json({ error: error.message });
-    }
-});
-
 // Existing route for single transaction
 router.post('/', async (req, res) => {
     try {

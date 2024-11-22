@@ -221,8 +221,8 @@ export const TransactionForm: React.FC = () => {
                 onChange={handleSingleTransactionChange}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
-                <option value="BUY">BUY</option>
-                <option value="SELL">SELL</option>
+                <option value="BUY">Buy</option>
+                <option value="SELL">Sell</option>
               </select>
             </div>
             <div>
@@ -315,7 +315,6 @@ export const TransactionForm: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Portfolio</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
@@ -327,9 +326,6 @@ export const TransactionForm: React.FC = () => {
                   <tr key={transaction.purchase_id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(transaction.purchase_date)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {transaction.portfolio_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {transaction.ticker}
@@ -345,13 +341,13 @@ export const TransactionForm: React.FC = () => {
                       {transaction.quantity}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${transaction.purchase_price}
+                      ${transaction.purchase_price.toFixed(2)}
                     </td>
                   </tr>
                 ))}
                 {recentTransactions.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
                       No recent transactions found
                     </td>
                   </tr>

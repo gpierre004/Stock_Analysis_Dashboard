@@ -221,8 +221,8 @@ export const TransactionForm: React.FC = () => {
                 onChange={handleSingleTransactionChange}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
-                <option value="BUY">BUY</option>
-                <option value="SELL">SELL</option>
+                <option value="BUY">Buy</option>
+                <option value="SELL">Sell</option>
               </select>
             </div>
             <div>
@@ -345,7 +345,7 @@ export const TransactionForm: React.FC = () => {
                       {transaction.quantity}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${transaction.purchase_price}
+                      ${(transaction.purchase_price).toFixed(2)}
                     </td>
                   </tr>
                 ))}

@@ -12,10 +12,6 @@ interface TransactionEntry {
   comment?: string;
 }
 
-interface RecentTransaction extends TransactionEntry {
-  purchase_id: number;
-}
-
 export const TransactionForm: React.FC = () => {
   const [portfolioId, setPortfolioId] = useState<number>(1); // Default portfolio ID
   const [singleTransaction, setSingleTransaction] = useState<TransactionEntry>({
@@ -32,24 +28,6 @@ export const TransactionForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([]);
-
-  useEffect(() => {
-    fetchRecentTransactions();
-  }, []); // Only fetch on component mount
-
-  const fetchRecentTransactions = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/transactions/recent');
-      if (!response.ok) {
-        throw new Error('Failed to fetch recent transactions');
-      }
-      const data = await response.json();
-      setRecentTransactions(data);
-    } catch (error) {
-      console.error('Error fetching recent transactions:', error);
-    }
-  };
 
   const handleSingleTransactionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -101,7 +79,6 @@ export const TransactionForm: React.FC = () => {
     .then(result => {
       alert(`${result.count || 0} transactions uploaded successfully`);
       setBulkTransactions([]);
-      fetchRecentTransactions(); // Refresh recent transactions
     })
     .catch(error => {
       console.error('Error uploading transactions:', error);
@@ -145,18 +122,11 @@ export const TransactionForm: React.FC = () => {
         portfolio_id: portfolioId,
         comment: ''
       });
-
-      // Refresh recent transactions
-      fetchRecentTransactions();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -221,8 +191,8 @@ export const TransactionForm: React.FC = () => {
                 onChange={handleSingleTransactionChange}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
-                <option value="BUY">BUY</option>
-                <option value="SELL">SELL</option>
+                <option value="BUY">Buy</option>
+                <option value="SELL">Sell</option>
               </select>
             </div>
             <div>
@@ -306,60 +276,6 @@ export const TransactionForm: React.FC = () => {
             </div>
           </div>
         )}
-
-        {/* Recent Transactions Section */}
-        <div className="mt-8">
-          <h3 className="text-xl font-bold mb-4 text-gray-800">Recent Transactions</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border rounded-lg">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Portfolio</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {recentTransactions.map((transaction) => (
-                  <tr key={transaction.purchase_id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(transaction.purchase_date)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {transaction.portfolio_id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {transaction.ticker}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        transaction.type === 'BUY' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {transaction.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {transaction.quantity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${transaction.purchase_price}
-                    </td>
-                  </tr>
-                ))}
-                {recentTransactions.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                      No recent transactions found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -21,10 +21,11 @@ router.get('/template', (req, res) => {
     }
 });
 
-// Get recent transactions (all portfolios)
-router.get('/recent', async (req, res) => {
+// Get recent transactions
+router.get('/recent/:portfolioId', async (req, res) => {
     try {
-        const transactions = await getRecentTransactions();
+        const portfolioId = parseInt(req.params.portfolioId);
+        const transactions = await getRecentTransactions(portfolioId);
         res.json(transactions);
     } catch (error) {
         console.error('Error fetching recent transactions:', error);
