@@ -21,7 +21,7 @@ export async function startStockPriceUpdate() {
 export async function getStockPrices(ticker, limit = 30) {
   try {
     return await StockPrice.findAll({
-      where: { CompanyTicker: ticker },
+      where: { ticker: ticker },
       order: [['date', 'DESC']],
       limit: limit
     });

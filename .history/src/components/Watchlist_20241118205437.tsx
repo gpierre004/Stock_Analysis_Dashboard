@@ -5,7 +5,7 @@ import ErrorCard from './common/ErrorCard';
 import { GanttChartSquare } from 'lucide-react';
 
 interface WatchlistItem {
-    CompanyTicker: string;
+    ticker: string;
     currentPrice: number | null;
     priceWhenAdded: number | null;
     priceChange: number | null;
@@ -194,8 +194,8 @@ export const Watchlist = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {watchlist.map((item) => (
-                                    <tr key={item.CompanyTicker}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.CompanyTicker}</td>
+                                    <tr key={item.ticker}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.ticker}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {item.Company?.name || 'N/A'}
                                             <div className="text-xs text-gray-400">{item.Company?.sector || 'N/A'}</div>

@@ -5,7 +5,7 @@ import logger from '../utils/logger.js';
 export async function getLatestStockPrices() {
   try {
     const latestPrices = await StockPrice.findAll({
-      attributes: ['CompanyTicker', 'adjustedClose', 'volume', 'date'],
+      attributes: ['ticker', 'adjustedClose', 'volume', 'date'],
       include: [{
         model: Company,
         attributes: ['name', 'sector']
@@ -23,7 +23,7 @@ export async function getLatestStockPrices() {
 
     // Transform the results to match the expected interface
     const transformedPrices = latestPrices.map(price => ({
-      CompanyTicker: price.CompanyTicker,
+      ticker: price.ticker,
       adjustedClose: Number(price.adjustedClose),
       volume: Number(price.volume),
       date: price.date
@@ -40,13 +40,13 @@ export async function getLatestStockPrices() {
 export async function getVolumeAnalysis(ticker) {
   try {
     const volumeAnalysis = await StockPrice.findOne({
-      where: { CompanyTicker: ticker },
+      where: { ticker: ticker },
       order: [['date', 'DESC']],
       attributes: [
-        'CompanyTicker',
+        'ticker',
         [sequelize.literal('volume'), 'volume'],
-        [sequelize.literal('(SELECT AVG(volume) FROM "StockPrices" WHERE "CompanyTicker" = :ticker)'), 'avg_volume'],
-        [sequelize.literal('(SELECT SUM(volume * adjustedClose) / SUM(volume) FROM "StockPrices" WHERE "CompanyTicker" = :ticker ORDER BY date DESC LIMIT 20)'), 'vwap']
+        [sequelize.literal('(SELECT AVG(volume) FROM "StockPrices" WHERE "ticker" = :ticker)'), 'avg_volume'],
+        [sequelize.literal('(SELECT SUM(volume * adjustedClose) / SUM(volume) FROM "StockPrices" WHERE "ticker" = :ticker ORDER BY date DESC LIMIT 20)'), 'vwap']
       ],
       replacements: { ticker },
       raw: true
@@ -54,7 +54,7 @@ export async function getVolumeAnalysis(ticker) {
 
     logger.info(`Fetched volume analysis for ${ticker}`);
     return {
-      CompanyTicker: volumeAnalysis.CompanyTicker,
+      ticker: volumeAnalysis.ticker,
       volume: Number(volumeAnalysis.volume),
       avg_volume: Number(volumeAnalysis.avg_volume),
       vwap: Number(volumeAnalysis.vwap)
@@ -68,15 +68,15 @@ export async function getVolumeAnalysis(ticker) {
 export async function getTechnicalIndicators(ticker) {
   try {
     const technicalIndicators = await StockPrice.findOne({
-      where: { CompanyTicker: ticker },
+      where: { ticker: ticker },
       order: [['date', 'DESC']],
       attributes: [
-        'CompanyTicker',
+        'ticker',
         [sequelize.literal('adjustedClose'), 'current_price'],
         [sequelize.literal(`
           (SELECT (adjustedClose - LAG(adjustedClose, 20) OVER (ORDER BY date)) / LAG(adjustedClose, 20) OVER (ORDER BY date) * 100 
            FROM "StockPrices" 
-           WHERE "CompanyTicker" = :ticker 
+           WHERE "ticker" = :ticker 
            ORDER BY date DESC 
            LIMIT 1
           )
@@ -84,7 +84,7 @@ export async function getTechnicalIndicators(ticker) {
         [sequelize.literal(`
           (SELECT AVG(adjustedClose) 
            FROM "StockPrices" 
-           WHERE "CompanyTicker" = :ticker 
+           WHERE "ticker" = :ticker 
            ORDER BY date DESC 
            LIMIT 20
           )
@@ -92,7 +92,7 @@ export async function getTechnicalIndicators(ticker) {
         [sequelize.literal(`
           (SELECT AVG(volume) 
            FROM "StockPrices" 
-           WHERE "CompanyTicker" = :ticker 
+           WHERE "ticker" = :ticker 
            ORDER BY date DESC 
            LIMIT 20
           )
@@ -104,7 +104,7 @@ export async function getTechnicalIndicators(ticker) {
 
     logger.info(`Fetched technical indicators for ${ticker}`);
     return {
-      CompanyTicker: technicalIndicators.CompanyTicker,
+      ticker: technicalIndicators.ticker,
       current_price: Number(technicalIndicators.current_price),
       price_change_20d: technicalIndicators.price_change_20d !== null 
         ? Number(technicalIndicators.price_change_20d) 

@@ -17,7 +17,7 @@ export default (sequelize) => {
     close: DataTypes.FLOAT,
     volume: DataTypes.BIGINT,
     adjustedClose: DataTypes.FLOAT,
-    CompanyTicker: {
+    ticker: {
       type: DataTypes.STRING,
       references: {
         model: 'Companies',
@@ -28,7 +28,7 @@ export default (sequelize) => {
     indexes: [
       {
         unique: true,
-        fields: ['CompanyTicker', 'date']
+        fields: ['ticker', 'date']
       }
     ]
   });

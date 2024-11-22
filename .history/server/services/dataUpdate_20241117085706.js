@@ -111,7 +111,7 @@ export async function updateStockPrices(ticker, stockData) {
   try {
     for (const data of stockData) {
       await StockPrice.upsert({
-        CompanyTicker: ticker,
+        ticker: ticker,
         date: data.date,
         open: data.open,
         high: data.high,

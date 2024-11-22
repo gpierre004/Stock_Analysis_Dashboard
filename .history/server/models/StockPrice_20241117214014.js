@@ -2,11 +2,11 @@ import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
   const StockPrice = sequelize.define('StockPrice', {
-    CompanyTicker: {
+    ticker: {
       type: DataTypes.STRING,
       allowNull: false,
       primaryKey: true,
-      field: 'CompanyTicker',
+      field: 'ticker',
       references: {
         model: 'Companies',
         key: 'ticker'
@@ -54,7 +54,7 @@ export default (sequelize) => {
     indexes: [
       {
         unique: true,
-        fields: ['CompanyTicker', 'date']
+        fields: ['ticker', 'date']
       }
     ]
   });

@@ -20,7 +20,7 @@ export const Dashboard = () => {
   } = useLatestPrices();
 
   const tickers = React.useMemo(() => 
-    latestPrices?.map(price => price.CompanyTicker) || [], 
+    latestPrices?.map(price => price.ticker) || [], 
     [latestPrices]
   );
 
@@ -125,7 +125,7 @@ export const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {latestPrices.map((price) => (
-            <StockCard key={price.CompanyTicker} ticker={price.CompanyTicker} />
+            <StockCard key={price.ticker} ticker={price.ticker} />
           ))}
         </div>
 

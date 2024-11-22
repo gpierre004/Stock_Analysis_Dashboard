@@ -31,14 +31,14 @@ const handleDatabaseError = (error, res) => {
 app.get('/api/prices/latest', async (req, res) => {
   try {
     const { rows } = await pool.query(`
-      SELECT DISTINCT ON ("CompanyTicker") 
-        "CompanyTicker",
+      SELECT DISTINCT ON ("ticker") 
+        "ticker",
         date,
         "adjustedClose"::numeric::float8 as "adjustedClose",
         volume::numeric::float8 as volume
       FROM public."StockPrices"
       WHERE "adjustedClose" IS NOT NULL
-      ORDER BY "CompanyTicker", date DESC
+      ORDER BY "ticker", date DESC
       LIMIT 5
     `);
     res.json(rows);
@@ -53,7 +53,7 @@ app.get('/api/analysis/volume/:ticker', async (req, res) => {
     const { rows } = await pool.query(`
       WITH RecentPrices AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
           volume::numeric::float8 as volume,
           "adjustedClose"::numeric::float8 as "adjustedClose",
@@ -62,19 +62,19 @@ app.get('/api/analysis/volume/:ticker', async (req, res) => {
             ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING
           ) as avg_volume
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = $1
+        WHERE "ticker" = $1
           AND volume IS NOT NULL
           AND "adjustedClose" IS NOT NULL
         ORDER BY date DESC
         LIMIT 21
       )
       SELECT 
-        "CompanyTicker",
+        "ticker",
         FIRST_VALUE(volume) OVER (ORDER BY date DESC) as volume,
         FIRST_VALUE(avg_volume) OVER (ORDER BY date DESC) as avg_volume,
         SUM(volume * "adjustedClose") / NULLIF(SUM(volume), 0) as vwap
       FROM RecentPrices
-      GROUP BY "CompanyTicker", date
+      GROUP BY "ticker", date
       ORDER BY date DESC
       LIMIT 1
     `, [ticker]);
@@ -90,20 +90,20 @@ app.get('/api/analysis/technical/:ticker', async (req, res) => {
     const { rows } = await pool.query(`
       WITH RecentPrices AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
           "adjustedClose"::numeric::float8 as "adjustedClose",
           volume::numeric::float8 as volume,
           LAG("adjustedClose"::numeric::float8, 20) OVER (ORDER BY date) as price_20d_ago
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = $1
+        WHERE "ticker" = $1
           AND "adjustedClose" IS NOT NULL
           AND volume IS NOT NULL
         ORDER BY date DESC
         LIMIT 20
       )
       SELECT 
-        "CompanyTicker",
+        "ticker",
         FIRST_VALUE("adjustedClose") OVER w as current_price,
         CASE 
           WHEN price_20d_ago IS NOT NULL THEN
@@ -137,22 +137,22 @@ app.get('/api/analysis/correlations', async (req, res) => {
     const { rows } = await pool.query(`
       WITH DailyReturns AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
-          ("adjustedClose"::numeric::float8 - LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "CompanyTicker" ORDER BY date)) 
-          / NULLIF(LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "CompanyTicker" ORDER BY date), 0) as daily_return
+          ("adjustedClose"::numeric::float8 - LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date)) 
+          / NULLIF(LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date), 0) as daily_return
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = ANY($1)
+        WHERE "ticker" = ANY($1)
           AND "adjustedClose" IS NOT NULL
           AND date >= CURRENT_DATE - INTERVAL '30 days'
       )
       SELECT 
-        a."CompanyTicker" as ticker1,
-        b."CompanyTicker" as ticker2,
+        a."ticker" as ticker1,
+        b."ticker" as ticker2,
         CORR(a.daily_return, b.daily_return)::numeric::float8 as correlation
       FROM DailyReturns a
-      JOIN DailyReturns b ON a.date = b.date AND a."CompanyTicker" < b."CompanyTicker"
-      GROUP BY a."CompanyTicker", b."CompanyTicker"
+      JOIN DailyReturns b ON a.date = b.date AND a."ticker" < b."ticker"
+      GROUP BY a."ticker", b."ticker"
       HAVING COUNT(*) >= 24
     `, [tickerArray]);
     res.json(rows);

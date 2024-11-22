@@ -21,7 +21,7 @@ router.get('/analysis/volume/:ticker', async (req, res) => {
   try {
     const { ticker } = req.params;
     const { rows } = await query(
-      'SELECT * FROM vw_volume_analysis WHERE "CompanyTicker" = $1',
+      'SELECT * FROM vw_volume_analysis WHERE "ticker" = $1',
       [ticker]
     );
     res.json(rows[0] || null);
@@ -36,7 +36,7 @@ router.get('/analysis/technical/:ticker', async (req, res) => {
   try {
     const { ticker } = req.params;
     const { rows } = await query(
-      'SELECT * FROM vw_technical_analysis WHERE "CompanyTicker" = $1',
+      'SELECT * FROM vw_technical_analysis WHERE "ticker" = $1',
       [ticker]
     );
     res.json(rows[0] || null);
@@ -58,22 +58,22 @@ router.get('/analysis/correlations', async (req, res) => {
     const { rows } = await query(`
       WITH DailyReturns AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
-          ("adjustedClose"::numeric::float8 - LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "CompanyTicker" ORDER BY date)) 
-          / NULLIF(LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "CompanyTicker" ORDER BY date), 0) as daily_return
+          ("adjustedClose"::numeric::float8 - LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date)) 
+          / NULLIF(LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date), 0) as daily_return
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = ANY($1)
+        WHERE "ticker" = ANY($1)
           AND "adjustedClose" IS NOT NULL
           AND date >= CURRENT_DATE - INTERVAL '30 days'
       )
       SELECT 
-        a."CompanyTicker" as ticker1,
-        b."CompanyTicker" as ticker2,
+        a."ticker" as ticker1,
+        b."ticker" as ticker2,
         CORR(a.daily_return, b.daily_return)::numeric::float8 as correlation
       FROM DailyReturns a
-      JOIN DailyReturns b ON a.date = b.date AND a."CompanyTicker" < b."CompanyTicker"
-      GROUP BY a."CompanyTicker", b."CompanyTicker"
+      JOIN DailyReturns b ON a.date = b.date AND a."ticker" < b."ticker"
+      GROUP BY a."ticker", b."ticker"
       HAVING COUNT(*) >= 24
     `, [tickerArray]);
     res.json(rows);

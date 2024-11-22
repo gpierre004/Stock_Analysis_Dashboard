@@ -10,7 +10,7 @@ export async function getLatestStockPrices() {
     // Fetch the latest prices for each unique ticker on that date
     const latestPrices = await StockPrice.findAll({
       attributes: [
-        'CompanyTicker', 
+        'ticker', 
         [sequelize.col('adjustedClose'), 'adjustedClose'], 
         'volume', 
         'date'
@@ -30,7 +30,7 @@ export async function getLatestStockPrices() {
 
     // Transform the results to match the expected interface
     const transformedPrices = latestPrices.map(price => ({
-      CompanyTicker: price.CompanyTicker,
+      ticker: price.ticker,
       adjustedClose: Number(price.adjustedClose),
       volume: Number(price.volume),
       date: price.date
@@ -49,20 +49,20 @@ export async function getVolumeAnalysis(ticker) {
     const volumeAnalysis = await sequelize.query(`
       WITH LatestData AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           volume::numeric::float8 as volume,
           AVG(volume::numeric::float8) OVER (
-            PARTITION BY "CompanyTicker"
+            PARTITION BY "ticker"
             ORDER BY date 
             ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING
           ) as avg_volume,
-          ROW_NUMBER() OVER (PARTITION BY "CompanyTicker" ORDER BY date DESC) as rn
+          ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = :ticker
+        WHERE "ticker" = :ticker
           AND volume IS NOT NULL
       )
       SELECT 
-        "CompanyTicker",
+        "ticker",
         volume,
         avg_volume
       FROM LatestData
@@ -80,7 +80,7 @@ export async function getVolumeAnalysis(ticker) {
     const result = volumeAnalysis[0];
     logger.info(`Fetched volume analysis for ${ticker}`);
     return {
-      CompanyTicker: result.CompanyTicker,
+      ticker: result.ticker,
       volume: Number(result.volume),
       avg_volume: Number(result.avg_volume)
     };
@@ -95,29 +95,29 @@ export async function getTechnicalIndicators(ticker) {
     const technicalIndicators = await sequelize.query(`
       WITH LatestData AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           adjustedClose::numeric::float8 as current_price,
           LAG(adjustedClose::numeric::float8, 20) OVER (
-            PARTITION BY "CompanyTicker" 
+            PARTITION BY "ticker" 
             ORDER BY date
           ) as price_20d_ago,
           AVG(adjustedClose::numeric::float8) OVER (
-            PARTITION BY "CompanyTicker"
+            PARTITION BY "ticker"
             ORDER BY date
             ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
           ) as sma20,
           AVG(volume::numeric::float8) OVER (
-            PARTITION BY "CompanyTicker"
+            PARTITION BY "ticker"
             ORDER BY date
             ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
           ) as avg_volume,
-          ROW_NUMBER() OVER (PARTITION BY "CompanyTicker" ORDER BY date DESC) as rn
+          ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = :ticker
+        WHERE "ticker" = :ticker
           AND adjustedClose IS NOT NULL
       )
       SELECT 
-        "CompanyTicker",
+        "ticker",
         current_price,
         CASE 
           WHEN price_20d_ago IS NOT NULL THEN
@@ -141,7 +141,7 @@ export async function getTechnicalIndicators(ticker) {
     const result = technicalIndicators[0];
     logger.info(`Fetched technical indicators for ${ticker}`);
     return {
-      CompanyTicker: result.CompanyTicker,
+      ticker: result.ticker,
       current_price: Number(result.current_price),
       price_change_20d: result.price_change_20d !== null 
         ? Number(result.price_change_20d) 

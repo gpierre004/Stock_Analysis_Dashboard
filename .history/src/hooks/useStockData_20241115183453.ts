@@ -3,21 +3,21 @@ import { useQuery } from '@tanstack/react-query';
 const API_BASE_URL = 'http://localhost:3000/api';
 
 interface StockPrice {
-  CompanyTicker: string;
+  ticker: string;
   adjustedClose: number;
   volume: number;
   date: string;
 }
 
 interface VolumeAnalysisData {
-  CompanyTicker: string;
+  ticker: string;
   volume: number;
   avg_volume: number;
   vwap: number;
 }
 
 interface TechnicalIndicatorData {
-  CompanyTicker: string;
+  ticker: string;
   current_price: number;
   price_change_20d: number;
   sma20: number;

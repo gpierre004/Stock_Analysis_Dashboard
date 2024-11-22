@@ -2,16 +2,16 @@
 CREATE OR REPLACE VIEW vw_latest_prices AS
 WITH RankedPrices AS (
   SELECT 
-    "CompanyTicker",
+    "ticker",
     date,
     "adjustedClose"::numeric::float8 as "adjustedClose",
     volume::numeric::float8 as volume,
-    ROW_NUMBER() OVER (PARTITION BY "CompanyTicker" ORDER BY date DESC) as rn
+    ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
   FROM public."StockPrices"
   WHERE "adjustedClose" IS NOT NULL
 )
 SELECT 
-  "CompanyTicker",
+  "ticker",
   date,
   "adjustedClose",
   volume
@@ -22,28 +22,28 @@ WHERE rn = 1;
 CREATE OR REPLACE VIEW vw_volume_analysis AS
 WITH LatestData AS (
   SELECT 
-    "CompanyTicker",
+    "ticker",
     date,
     volume::numeric::float8 as volume,
     "adjustedClose"::numeric::float8 as "adjustedClose",
     AVG(volume::numeric::float8) OVER (
-      PARTITION BY "CompanyTicker"
+      PARTITION BY "ticker"
       ORDER BY date 
       ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING
     ) as avg_volume,
-    ROW_NUMBER() OVER (PARTITION BY "CompanyTicker" ORDER BY date DESC) as rn
+    ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
   FROM public."StockPrices"
   WHERE volume IS NOT NULL AND "adjustedClose" IS NOT NULL
 )
 SELECT 
-  "CompanyTicker",
+  "ticker",
   volume,
   avg_volume,
   SUM(volume * "adjustedClose") OVER w / NULLIF(SUM(volume) OVER w, 0) as vwap
 FROM LatestData
 WHERE rn = 1
 WINDOW w AS (
-  PARTITION BY "CompanyTicker"
+  PARTITION BY "ticker"
   ORDER BY date DESC
   ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
 );
@@ -52,30 +52,30 @@ WINDOW w AS (
 CREATE OR REPLACE VIEW vw_technical_analysis AS
 WITH LatestData AS (
   SELECT 
-    "CompanyTicker",
+    "ticker",
     date,
     "adjustedClose"::numeric::float8 as "adjustedClose",
     volume::numeric::float8 as volume,
     LAG("adjustedClose"::numeric::float8, 20) OVER (
-      PARTITION BY "CompanyTicker" 
+      PARTITION BY "ticker" 
       ORDER BY date
     ) as price_20d_ago,
     AVG("adjustedClose"::numeric::float8) OVER (
-      PARTITION BY "CompanyTicker"
+      PARTITION BY "ticker"
       ORDER BY date
       ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
     ) as sma20,
     AVG(volume::numeric::float8) OVER (
-      PARTITION BY "CompanyTicker"
+      PARTITION BY "ticker"
       ORDER BY date
       ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
     ) as avg_volume,
-    ROW_NUMBER() OVER (PARTITION BY "CompanyTicker" ORDER BY date DESC) as rn
+    ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
   FROM public."StockPrices"
   WHERE "adjustedClose" IS NOT NULL AND volume IS NOT NULL
 )
 SELECT 
-  "CompanyTicker",
+  "ticker",
   "adjustedClose" as current_price,
   CASE 
     WHEN price_20d_ago IS NOT NULL THEN

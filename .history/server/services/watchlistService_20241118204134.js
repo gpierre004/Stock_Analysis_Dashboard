@@ -56,12 +56,12 @@ async function getPotentialStocks() {
   try {
     const potentialStocks = await StockPrice.findAll({
       attributes: [
-        'CompanyTicker',
+        'ticker',
         [Sequelize.fn('MAX', Sequelize.col('high')), '52WeekHigh'],
         [Sequelize.fn('AVG', Sequelize.col('close')), 'avgClose'],
         [Sequelize.fn('AVG', Sequelize.col('volume')), 'avgVolume'],
-        [Sequelize.literal('(SELECT close FROM "StockPrices" sp WHERE sp."CompanyTicker" = "StockPrice"."CompanyTicker" ORDER BY date DESC LIMIT 1)'), 'currentPrice'],
-        [Sequelize.literal('(SELECT volume FROM "StockPrices" sp WHERE sp."CompanyTicker" = "StockPrice"."CompanyTicker" ORDER BY date DESC LIMIT 1)'), 'currentVolume'],
+        [Sequelize.literal('(SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'currentPrice'],
+        [Sequelize.literal('(SELECT volume FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'currentVolume'],
       ],
       include: [{ 
         model: Company,
@@ -70,22 +70,22 @@ async function getPotentialStocks() {
       where: {
         date: { [Op.gte]: oneYearAgo }
       },
-      group: ['CompanyTicker', 'Company.ticker', 'Company.name', 'Company.sector', 'Company.industry'],
+      group: ['ticker', 'Company.ticker', 'Company.name', 'Company.sector', 'Company.industry'],
       having: Sequelize.and(
         Sequelize.literal(`
-          (SELECT close FROM "StockPrices" sp WHERE sp."CompanyTicker" = "StockPrice"."CompanyTicker" ORDER BY date DESC LIMIT 1) 
+          (SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
           <= (1 - 0.25) * MAX("StockPrice"."high")
         `),
         Sequelize.literal(`
-          (SELECT close FROM "StockPrices" sp WHERE sp."CompanyTicker" = "StockPrice"."CompanyTicker" ORDER BY date DESC LIMIT 1) 
+          (SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
           >= 0.70 * MAX("StockPrice"."high")
         `),
         Sequelize.literal(`
-          (SELECT volume FROM "StockPrices" sp WHERE sp."CompanyTicker" = "StockPrice"."CompanyTicker" ORDER BY date DESC LIMIT 1)
+          (SELECT volume FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)
           >= 1.5 * AVG("StockPrice"."volume")
         `),
         Sequelize.literal(`
-          (SELECT close FROM "StockPrices" sp WHERE sp."CompanyTicker" = "StockPrice"."CompanyTicker" ORDER BY date DESC LIMIT 1) 
+          (SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
           > 85
         `)
       ),
@@ -117,7 +117,7 @@ async function addToWatchList(potentialStocks) {
       // Check if stock was added in the last 90 days
       const recentEntry = await WatchList.findOne({
         where: {
-          CompanyTicker: stock.CompanyTicker,
+          ticker: stock.ticker,
           dateAdded: { [Op.gte]: ninetyDaysAgo }
         }
       });
@@ -129,7 +129,7 @@ async function addToWatchList(potentialStocks) {
         const volumeIncrease = (parseFloat(stock.dataValues.currentVolume) / parseFloat(stock.dataValues.avgVolume) * 100 - 100).toFixed(2);
 
         await WatchList.create({
-          CompanyTicker: stock.CompanyTicker,
+          ticker: stock.ticker,
           dateAdded: today,
           reason: `Trading ${percentBelow52WeekHigh}% below 52-week high with ${volumeIncrease}% volume increase`,
           sector: stock.Company.sector,
@@ -160,12 +160,12 @@ async function addToWatchList(potentialStocks) {
 export async function updateWatchListPrices() {
   try {
     const watchListItems = await WatchList.findAll({
-      attributes: ['id', 'CompanyTicker']
+      attributes: ['id', 'ticker']
     });
 
     for (const item of watchListItems) {
       const latestPrice = await StockPrice.findOne({
-        where: { CompanyTicker: item.CompanyTicker },
+        where: { ticker: item.ticker },
         order: [['date', 'DESC']],
         attributes: ['close']
       });

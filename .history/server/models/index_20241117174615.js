@@ -26,11 +26,11 @@ const User = UserModel(sequelize);
 const Transaction = TransactionModel(sequelize);
 
 // Define relationships
-Company.hasMany(StockPrice, { foreignKey: 'CompanyTicker', sourceKey: 'ticker' });
-StockPrice.belongsTo(Company, { foreignKey: 'CompanyTicker', targetKey: 'ticker' });
+Company.hasMany(StockPrice, { foreignKey: 'ticker', sourceKey: 'ticker' });
+StockPrice.belongsTo(Company, { foreignKey: 'ticker', targetKey: 'ticker' });
 
-Company.hasMany(WatchList, { foreignKey: 'CompanyTicker', sourceKey: 'ticker' });
-WatchList.belongsTo(Company, { foreignKey: 'CompanyTicker', targetKey: 'ticker' });
+Company.hasMany(WatchList, { foreignKey: 'ticker', sourceKey: 'ticker' });
+WatchList.belongsTo(Company, { foreignKey: 'ticker', targetKey: 'ticker' });
 
 User.hasMany(WatchList);
 WatchList.belongsTo(User);

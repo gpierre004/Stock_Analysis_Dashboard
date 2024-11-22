@@ -32,16 +32,16 @@ app.get('/api/prices/latest', async (req, res) => {
     const { rows } = await pool.query(`
       WITH RankedPrices AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
           "adjustedClose"::numeric::float8 as "adjustedClose",
           volume::numeric::float8 as volume,
-          ROW_NUMBER() OVER (PARTITION BY "CompanyTicker" ORDER BY date DESC) as rn
+          ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
         FROM public."StockPrices"
         WHERE "adjustedClose" IS NOT NULL
       )
       SELECT 
-        "CompanyTicker",
+        "ticker",
         date,
         "adjustedClose",
         volume
@@ -61,7 +61,7 @@ app.get('/api/analysis/volume/:ticker', async (req, res) => {
     const { rows } = await pool.query(`
       WITH LatestData AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
           volume::numeric::float8 as volume,
           "adjustedClose"::numeric::float8 as "adjustedClose",
@@ -71,20 +71,20 @@ app.get('/api/analysis/volume/:ticker', async (req, res) => {
           ) as avg_volume,
           ROW_NUMBER() OVER (ORDER BY date DESC) as rn
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = $1
+        WHERE "ticker" = $1
           AND volume IS NOT NULL
           AND "adjustedClose" IS NOT NULL
         ORDER BY date DESC
         LIMIT 21
       )
       SELECT 
-        "CompanyTicker",
+        "ticker",
         volume,
         avg_volume,
         (
           SELECT SUM(volume * "adjustedClose") / NULLIF(SUM(volume), 0)
           FROM public."StockPrices"
-          WHERE "CompanyTicker" = $1
+          WHERE "ticker" = $1
           AND date >= CURRENT_DATE - INTERVAL '20 days'
         ) as vwap
       FROM LatestData
@@ -102,21 +102,21 @@ app.get('/api/analysis/technical/:ticker', async (req, res) => {
     const { rows } = await pool.query(`
       WITH LatestData AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
           "adjustedClose"::numeric::float8 as "adjustedClose",
           volume::numeric::float8 as volume,
           LAG("adjustedClose"::numeric::float8, 20) OVER (ORDER BY date) as price_20d_ago,
           ROW_NUMBER() OVER (ORDER BY date DESC) as rn
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = $1
+        WHERE "ticker" = $1
           AND "adjustedClose" IS NOT NULL
           AND volume IS NOT NULL
         ORDER BY date DESC
         LIMIT 20
       )
       SELECT 
-        "CompanyTicker",
+        "ticker",
         "adjustedClose" as current_price,
         CASE 
           WHEN price_20d_ago IS NOT NULL THEN
@@ -129,13 +129,13 @@ app.get('/api/analysis/technical/:ticker', async (req, res) => {
         (
           SELECT AVG("adjustedClose"::numeric::float8)
           FROM public."StockPrices"
-          WHERE "CompanyTicker" = $1
+          WHERE "ticker" = $1
           AND date >= CURRENT_DATE - INTERVAL '20 days'
         ) as sma20,
         (
           SELECT AVG(volume::numeric::float8)
           FROM public."StockPrices"
-          WHERE "CompanyTicker" = $1
+          WHERE "ticker" = $1
           AND date >= CURRENT_DATE - INTERVAL '20 days'
         ) as avg_volume
       FROM LatestData
@@ -158,22 +158,22 @@ app.get('/api/analysis/correlations', async (req, res) => {
     const { rows } = await pool.query(`
       WITH DailyReturns AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
-          ("adjustedClose"::numeric::float8 - LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "CompanyTicker" ORDER BY date)) 
-          / NULLIF(LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "CompanyTicker" ORDER BY date), 0) as daily_return
+          ("adjustedClose"::numeric::float8 - LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date)) 
+          / NULLIF(LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date), 0) as daily_return
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = ANY($1)
+        WHERE "ticker" = ANY($1)
           AND "adjustedClose" IS NOT NULL
           AND date >= CURRENT_DATE - INTERVAL '30 days'
       )
       SELECT 
-        a."CompanyTicker" as ticker1,
-        b."CompanyTicker" as ticker2,
+        a."ticker" as ticker1,
+        b."ticker" as ticker2,
         CORR(a.daily_return, b.daily_return)::numeric::float8 as correlation
       FROM DailyReturns a
-      JOIN DailyReturns b ON a.date = b.date AND a."CompanyTicker" < b."CompanyTicker"
-      GROUP BY a."CompanyTicker", b."CompanyTicker"
+      JOIN DailyReturns b ON a.date = b.date AND a."ticker" < b."ticker"
+      GROUP BY a."ticker", b."ticker"
       HAVING COUNT(*) >= 24
     `, [tickerArray]);
     res.json(rows);

@@ -7,7 +7,7 @@ export interface StockPrice {
   close: number;
   volume: number;
   adjustedClose: number;
-  ticker: string;
+  companyTicker: string;
   createdAt: string;
   updatedAt: string;
 }

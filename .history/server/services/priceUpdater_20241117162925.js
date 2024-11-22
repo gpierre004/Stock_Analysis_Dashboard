@@ -71,16 +71,16 @@ async function updateStockPrices(ticker, stockData) {
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 5);
     await client.query(
-      'DELETE FROM public."StockPrices" WHERE "CompanyTicker" = $1 AND date < $2',
+      'DELETE FROM public."StockPrices" WHERE "ticker" = $1 AND date < $2',
       [ticker, threeYearsAgo]
     );
 
     for (const data of stockData) {
       await client.query(
         `INSERT INTO public."StockPrices"(
-          date, open, high, low, close, volume, "adjustedClose", "CompanyTicker", "createdAt", "updatedAt"
+          date, open, high, low, close, volume, "adjustedClose", "ticker", "createdAt", "updatedAt"
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        ON CONFLICT ("CompanyTicker", date) DO UPDATE SET
+        ON CONFLICT ("ticker", date) DO UPDATE SET
           open = EXCLUDED.open,
           high = EXCLUDED.high,
           low = EXCLUDED.low,

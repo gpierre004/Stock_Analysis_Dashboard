@@ -21,9 +21,9 @@ export async function query(text: string, params?: any[]) {
 export async function getLatestPrices(limit = 5) {
   const text = `
     WITH LatestPrices AS (
-      SELECT DISTINCT ON ("ticker") *
+      SELECT DISTINCT ON ("CompanyTicker") *
       FROM public."StockPrices"
-      ORDER BY "ticker", date DESC
+      ORDER BY "CompanyTicker", date DESC
     )
     SELECT * FROM LatestPrices
     LIMIT $1
@@ -35,12 +35,12 @@ export async function getVolumeAnalysis(ticker: string, days = 20) {
   const text = `
     WITH VolumeStats AS (
       SELECT 
-        "ticker",
+        "CompanyTicker",
         volume,
         AVG(volume) OVER (ORDER BY date ROWS BETWEEN $1 PRECEDING AND 1 PRECEDING) as avg_volume,
         SUM(volume * "adjustedClose") / SUM(volume) as vwap
       FROM public."StockPrices"
-      WHERE "ticker" = $2
+      WHERE "CompanyTicker" = $2
       ORDER BY date DESC
       LIMIT 1
     )
@@ -53,24 +53,24 @@ export async function getTechnicalIndicators(ticker: string) {
   const text = `
     WITH TechnicalData AS (
       SELECT 
-        "ticker",
+        "CompanyTicker",
         "adjustedClose",
         LAG("adjustedClose", 20) OVER (ORDER BY date) as price_20d_ago,
         volume,
         date
       FROM public."StockPrices"
-      WHERE "ticker" = $1
+      WHERE "CompanyTicker" = $1
       ORDER BY date DESC
       LIMIT 20
     )
     SELECT 
-      "ticker",
+      "CompanyTicker",
       "adjustedClose" as current_price,
       ROUND(("adjustedClose" - price_20d_ago) / price_20d_ago * 100, 2) as price_change_20d,
       AVG("adjustedClose") as sma20,
       AVG(volume) as avg_volume
     FROM TechnicalData
-    GROUP BY "ticker", "adjustedClose", price_20d_ago
+    GROUP BY "CompanyTicker", "adjustedClose", price_20d_ago
   `;
   return query(text, [ticker]);
 }
@@ -79,21 +79,21 @@ export async function getCorrelations(tickers: string[], days = 30) {
   const text = `
     WITH DailyReturns AS (
       SELECT 
-        "ticker",
+        "CompanyTicker",
         date,
-        ("adjustedClose" - LAG("adjustedClose") OVER (PARTITION BY "ticker" ORDER BY date)) 
-        / LAG("adjustedClose") OVER (PARTITION BY "ticker" ORDER BY date) as daily_return
+        ("adjustedClose" - LAG("adjustedClose") OVER (PARTITION BY "CompanyTicker" ORDER BY date)) 
+        / LAG("adjustedClose") OVER (PARTITION BY "CompanyTicker" ORDER BY date) as daily_return
       FROM public."StockPrices"
-      WHERE "ticker" = ANY($1)
+      WHERE "CompanyTicker" = ANY($1)
       AND date >= CURRENT_DATE - INTERVAL '$2 days'
     )
     SELECT 
-      a."ticker" as ticker1,
-      b."ticker" as ticker2,
+      a."CompanyTicker" as ticker1,
+      b."CompanyTicker" as ticker2,
       CORR(a.daily_return, b.daily_return) as correlation
     FROM DailyReturns a
-    JOIN DailyReturns b ON a.date = b.date AND a."ticker" < b."ticker"
-    GROUP BY a."ticker", b."ticker"
+    JOIN DailyReturns b ON a.date = b.date AND a."CompanyTicker" < b."CompanyTicker"
+    GROUP BY a."CompanyTicker", b."CompanyTicker"
     HAVING COUNT(*) >= $2 * 0.8
   `;
   return query(text, [tickers, days]);

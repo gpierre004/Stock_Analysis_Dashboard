@@ -23,9 +23,9 @@ app.get('/api/prices/latest', async (req, res) => {
   try {
     const { rows } = await pool.query(`
       WITH LatestPrices AS (
-        SELECT DISTINCT ON ("CompanyTicker") *
+        SELECT DISTINCT ON ("ticker") *
         FROM public."StockPrices"
-        ORDER BY "CompanyTicker", date DESC
+        ORDER BY "ticker", date DESC
       )
       SELECT * FROM LatestPrices
       LIMIT 5
@@ -42,12 +42,12 @@ app.get('/api/analysis/volume/:ticker', async (req, res) => {
     const { rows } = await pool.query(`
       WITH VolumeStats AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           volume,
           AVG(volume) OVER (ORDER BY date ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING) as avg_volume,
           SUM(volume * "adjustedClose") / SUM(volume) as vwap
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = $1
+        WHERE "ticker" = $1
         ORDER BY date DESC
         LIMIT 1
       )
@@ -66,24 +66,24 @@ app.get('/api/analysis/technical/:ticker', async (req, res) => {
     const { rows } = await pool.query(`
       WITH TechnicalData AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           "adjustedClose",
           LAG("adjustedClose", 20) OVER (ORDER BY date) as price_20d_ago,
           volume,
           date
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = \$1
+        WHERE "ticker" = \$1
         ORDER BY date DESC
         LIMIT 20
       )
       SELECT 
-        "CompanyTicker",
+        "ticker",
         "adjustedClose" as current_price,
         ROUND(("adjustedClose" - price_20d_ago) / price_20d_ago * 100, 2) as price_change_20d,
         AVG("adjustedClose") as sma20,
         AVG(volume) as avg_volume
       FROM TechnicalData
-      GROUP BY "CompanyTicker", "adjustedClose", price_20d_ago
+      GROUP BY "ticker", "adjustedClose", price_20d_ago
     `, [ticker]);
 
     if (rows.length === 0) {
@@ -103,21 +103,21 @@ app.get('/api/analysis/correlations', async (req, res) => {
     const { rows } = await pool.query(`
       WITH DailyReturns AS (
         SELECT 
-          "CompanyTicker",
+          "ticker",
           date,
-          ("adjustedClose" - LAG("adjustedClose") OVER (PARTITION BY "CompanyTicker" ORDER BY date)) 
-          / LAG("adjustedClose") OVER (PARTITION BY "CompanyTicker" ORDER BY date) as daily_return
+          ("adjustedClose" - LAG("adjustedClose") OVER (PARTITION BY "ticker" ORDER BY date)) 
+          / LAG("adjustedClose") OVER (PARTITION BY "ticker" ORDER BY date) as daily_return
         FROM public."StockPrices"
-        WHERE "CompanyTicker" = ANY($1)
+        WHERE "ticker" = ANY($1)
         AND date >= CURRENT_DATE - INTERVAL '30 days'
       )
       SELECT 
-        a."CompanyTicker" as ticker1,
-        b."CompanyTicker" as ticker2,
+        a."ticker" as ticker1,
+        b."ticker" as ticker2,
         CORR(a.daily_return, b.daily_return) as correlation
       FROM DailyReturns a
-      JOIN DailyReturns b ON a.date = b.date AND a."CompanyTicker" < b."CompanyTicker"
-      GROUP BY a."CompanyTicker", b."CompanyTicker"
+      JOIN DailyReturns b ON a.date = b.date AND a."ticker" < b."ticker"
+      GROUP BY a."ticker", b."ticker"
       HAVING COUNT(*) >= 24
     `, [tickerArray]);
     res.json(rows);

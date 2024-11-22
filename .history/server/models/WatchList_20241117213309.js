@@ -7,7 +7,7 @@ export default (sequelize) => {
       primaryKey: true,
       autoIncrement: true
     },
-    CompanyTicker: {
+    ticker: {
       type: DataTypes.STRING,
       allowNull: false,
       references: {
