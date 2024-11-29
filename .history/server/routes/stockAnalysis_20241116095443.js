@@ -62,7 +62,7 @@ router.get('/analysis/correlations', async (req, res) => {
           date,
           ("adjustedClose"::numeric::float8 - LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date)) 
           / NULLIF(LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date), 0) as daily_return
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = ANY($1)
           AND "adjustedClose" IS NOT NULL
           AND date >= CURRENT_DATE - INTERVAL '30 days'

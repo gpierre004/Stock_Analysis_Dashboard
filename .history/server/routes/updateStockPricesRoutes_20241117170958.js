@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import { updateStockPrices, getTickers, getStockData } from '../services/priceUpdater.js';
+import { updatestock_prices, getTickers, getStockData } from '../services/priceUpdater.js';
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.post('/stock-prices/update', async (req, res) => {
                 const stockData = await getStockData(ticker, startDate, endDate);
                 
                 if (stockData) {
-                    await updateStockPrices(ticker, stockData);
+                    await updatestock_prices(ticker, stockData);
                     updatedCount++;
                     console.log(`Updated stock prices for ${ticker}`);
                 } else {

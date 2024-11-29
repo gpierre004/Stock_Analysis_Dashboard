@@ -5,7 +5,7 @@ import logger from './utils/logger.js';
 
 // Import routes
 import portfolioRoutes from './routes/portfolio.js';
-import stockPricesRoutes from './routes/stockPrices.js';
+import stock_pricesRoutes from './routes/stock_prices.js';
 import watchlistRoutes from './routes/watchlist.js';
 import stockAnalysisRoutes from './routes/stockAnalysis.js';
 import updateStockPricesRoutes from './routes/updateStockPricesRoutes.js';
@@ -23,7 +23,7 @@ app.use(express.json());
 // Routes
 app.use('/api/', stockAnalysisRoutes); // Do not remove this line it's needed to load the dashboard
 app.use('/api/portfolio', portfolioRoutes);
-app.use('/api/stock-prices', stockPricesRoutes);
+app.use('/api/stock-prices', stock_pricesRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/stock-analysis', stockAnalysisRoutes);
 app.use('/api/update-stock-prices', updateStockPricesRoutes);

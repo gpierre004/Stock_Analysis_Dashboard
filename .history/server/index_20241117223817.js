@@ -11,7 +11,7 @@ import watchlistRoutes from './routes/watchlist.js';
 import portfolioRoutes from './routes/portfolio.js';
 import stockAnalysisRoutes from './routes/stockAnalysis.js';
 import updateStockPricesRoutes from './routes/updateStockPricesRoutes.js';
-import stockPricesRoutes from './routes/stockPrices.js';
+import stock_pricesRoutes from './routes/stock_prices.js';
 
 // Load environment variables
 dotenv.config();
@@ -35,8 +35,8 @@ app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/stock-analysis', stockAnalysisRoutes);
 app.use('/api/update-prices', updateStockPricesRoutes);
-app.use('/api/prices', stockPricesRoutes);
-app.use('/api/analysis', stockPricesRoutes);
+app.use('/api/prices', stock_pricesRoutes);
+app.use('/api/analysis', stock_pricesRoutes);
 
 // Serve React app for all non-API routes
 app.get('*', (req, res) => {

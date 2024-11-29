@@ -34,7 +34,7 @@ app.post('/api/stock-prices/update', async (req, res) => {
               const stockData = await getStockData(ticker, startDate, endDate);
               
               if (stockData) {
-                  await updateStockPrices(ticker, stockData);
+                  await updatestock_prices(ticker, stockData);
                   updatedCount++;
                   console.log(`Updated stock prices for ${ticker}`);
               } else {

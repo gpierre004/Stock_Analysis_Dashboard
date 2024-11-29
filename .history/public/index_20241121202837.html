@@ -21,7 +21,7 @@
     <main>
         <div class="existing-controls">
             <button id="refreshButton">Refresh S&P 500 List</button>
-            <button id="updateStockPrices">Update Stock Prices</button>
+            <button id="updatestock_prices">Update Stock Prices</button>
             <button id="updateWatchList">Update Watch List</button>
             <button id="cleanupWatchList">Clean Up Watch List</button>
             <button id="updateWatchListButton">Update Watch List</button>
@@ -158,7 +158,7 @@
                     <p class="price"><strong>Price When Added:</strong> ${item.priceWhenAdded ? item.priceWhenAdded.toFixed(2) : 'N/A'}</p>
                     <p><strong>52 Week High:</strong> ${item.weekHigh52 ? item.weekHigh52.toFixed(2) : 'N/A'}</p>
                     <p class="percent-below"><strong>% Below High:</strong> ${item.percentBelow52WeekHigh ? item.percentBelow52WeekHigh.toFixed(2) : 'N/A'}%</p>
-                    <p class="date-added"><strong>Date Added:</strong> ${item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : 'N/A'}</p>
+                    <p class="date-added"><strong>Date Added:</strong> ${item.date_added ? new Date(item.date_added).toLocaleDateString() : 'N/A'}</p>
                     <p class="price-change"><strong>Price Change:</strong> ${item.priceChange ? item.priceChange.toFixed(2) : '0.00'}%</p>
                 </div>
             </div>
@@ -200,7 +200,7 @@
             });
 
             // Update Stock Prices button
-            document.getElementById('updateStockPrices').addEventListener('click', async () => {
+            document.getElementById('updatestock_prices').addEventListener('click', async () => {
                 try {
                     console.log('Update Stock Prices button clicked');
                     const response = await fetch('/api/stock-prices/update', {  // Remove the double 'api'

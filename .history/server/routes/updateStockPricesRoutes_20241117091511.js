@@ -1,5 +1,5 @@
 import express from 'express';
-import { updateStockPrices } from '../services/priceUpdater.js';
+import { updatestock_prices } from '../services/priceUpdater.js';
 
 const router = express.Router();
 // Route to trigger the stock data update process

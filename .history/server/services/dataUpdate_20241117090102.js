@@ -106,7 +106,7 @@ async function getStockData(ticker, startDate, endDate) {
   return null;
 }
 
-export async function updateStockPrices(ticker, stockData) {
+export async function updatestock_prices(ticker, stockData) {
   try {
     for (const data of stockData) {
       await StockPrice.upsert({
@@ -127,7 +127,7 @@ export async function updateStockPrices(ticker, stockData) {
   }
 }
 
-export async function updateAllStockPrices() {
+export async function updateAllstock_prices() {
   const client = await pool.connect();
   try {
       const tickers = await getTickers();
@@ -143,7 +143,7 @@ export async function updateAllStockPrices() {
           try {
               const stockData = await getStockData(ticker, startDate, endDate);
               if (stockData && stockData.length > 0) {
-                  await updateStockPrices(ticker, stockData);
+                  await updatestock_prices(ticker, stockData);
                   logger.info(`Updated stock prices for ${ticker}`);
                   updatedCount++;
               } else {
@@ -240,5 +240,5 @@ export function startPriceUpdaterJob() {
 if (process.argv[2] === 'refresh') {
   refreshSP500List().then(() => process.exit());
 } else if (process.argv[2] === 'update') {
-  updateAllStockPrices().then(() => process.exit());
+  updateAllstock_prices().then(() => process.exit());
 }

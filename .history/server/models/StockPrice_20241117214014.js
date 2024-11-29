@@ -49,7 +49,7 @@ export default (sequelize) => {
       field: 'adjustedClose'
     }
   }, {
-    tableName: 'StockPrices', // Explicitly set table name
+    tableName: 'stock_prices', // Explicitly set table name
     timestamps: false, // Disable timestamps
     indexes: [
       {

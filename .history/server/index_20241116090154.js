@@ -36,7 +36,7 @@ app.get('/api/prices/latest', async (req, res) => {
         date,
         "adjustedClose"::numeric::float8 as "adjustedClose",
         volume::numeric::float8 as volume
-      FROM public."StockPrices"
+      FROM public."stock_prices"
       WHERE "adjustedClose" IS NOT NULL
       ORDER BY "ticker", date DESC
       LIMIT 5
@@ -61,7 +61,7 @@ app.get('/api/analysis/volume/:ticker', async (req, res) => {
             ORDER BY date 
             ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING
           ) as avg_volume
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = $1
           AND volume IS NOT NULL
           AND "adjustedClose" IS NOT NULL
@@ -95,7 +95,7 @@ app.get('/api/analysis/technical/:ticker', async (req, res) => {
           "adjustedClose"::numeric::float8 as "adjustedClose",
           volume::numeric::float8 as volume,
           LAG("adjustedClose"::numeric::float8, 20) OVER (ORDER BY date) as price_20d_ago
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = $1
           AND "adjustedClose" IS NOT NULL
           AND volume IS NOT NULL
@@ -141,7 +141,7 @@ app.get('/api/analysis/correlations', async (req, res) => {
           date,
           ("adjustedClose"::numeric::float8 - LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date)) 
           / NULLIF(LAG("adjustedClose"::numeric::float8) OVER (PARTITION BY "ticker" ORDER BY date), 0) as daily_return
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = ANY($1)
           AND "adjustedClose" IS NOT NULL
           AND date >= CURRENT_DATE - INTERVAL '30 days'

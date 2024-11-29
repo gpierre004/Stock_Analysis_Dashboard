@@ -9,7 +9,7 @@ import watchlistRoutes from './routes/watchlist.js';
 import portfolioRoutes from './routes/portfolio.js';
 import stockAnalysisRoutes from './routes/stockAnalysis.js';
 import updateStockPricesRoutes from './routes/updateStockPricesRoutes.js';
-import stockPricesRoutes from './routes/stockPrices.js';
+import stock_pricesRoutes from './routes/stock_prices.js';
 
 // Load environment variables
 dotenv.config();
@@ -26,7 +26,7 @@ app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/stock-analysis', stockAnalysisRoutes);
 app.use('/api/update-prices', updateStockPricesRoutes);
-app.use('/api/prices', stockPricesRoutes);
+app.use('/api/prices', stock_pricesRoutes);
 
 // Debugging route to check server status
 app.get('/api/health', (req, res) => {

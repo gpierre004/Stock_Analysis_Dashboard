@@ -22,7 +22,7 @@ export async function getLatestPrices(limit = 5) {
   const text = `
     WITH LatestPrices AS (
       SELECT DISTINCT ON ("CompanyTicker") *
-      FROM public."StockPrices"
+      FROM public."stock_prices"
       ORDER BY "CompanyTicker", date DESC
     )
     SELECT * FROM LatestPrices
@@ -39,7 +39,7 @@ export async function getVolumeAnalysis(ticker: string, days = 20) {
         volume,
         AVG(volume) OVER (ORDER BY date ROWS BETWEEN $1 PRECEDING AND 1 PRECEDING) as avg_volume,
         SUM(volume * "adjustedClose") / SUM(volume) as vwap
-      FROM public."StockPrices"
+      FROM public."stock_prices"
       WHERE "CompanyTicker" = $2
       ORDER BY date DESC
       LIMIT 1
@@ -58,7 +58,7 @@ export async function getTechnicalIndicators(ticker: string) {
         LAG("adjustedClose", 20) OVER (ORDER BY date) as price_20d_ago,
         volume,
         date
-      FROM public."StockPrices"
+      FROM public."stock_prices"
       WHERE "CompanyTicker" = $1
       ORDER BY date DESC
       LIMIT 20
@@ -83,7 +83,7 @@ export async function getCorrelations(tickers: string[], days = 30) {
         date,
         ("adjustedClose" - LAG("adjustedClose") OVER (PARTITION BY "CompanyTicker" ORDER BY date)) 
         / LAG("adjustedClose") OVER (PARTITION BY "CompanyTicker" ORDER BY date) as daily_return
-      FROM public."StockPrices"
+      FROM public."stock_prices"
       WHERE "CompanyTicker" = ANY($1)
       AND date >= CURRENT_DATE - INTERVAL '$2 days'
     )

@@ -27,7 +27,7 @@ app.get('/api/prices/latest', async (req, res) => {
         date,
         "adjustedClose",
         volume
-      FROM public."StockPrices"
+      FROM public."stock_prices"
       ORDER BY "ticker", date DESC
       LIMIT 5
     `);
@@ -51,7 +51,7 @@ app.get('/api/analysis/volume/:ticker', async (req, res) => {
             ORDER BY date 
             ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING
           ) as avg_volume
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = $1
         ORDER BY date DESC
         LIMIT 21
@@ -82,7 +82,7 @@ app.get('/api/analysis/technical/:ticker', async (req, res) => {
           "adjustedClose",
           volume,
           LAG("adjustedClose", 20) OVER (ORDER BY date) as price_20d_ago
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = $1
         ORDER BY date DESC
         LIMIT 20
@@ -117,7 +117,7 @@ app.get('/api/analysis/correlations', async (req, res) => {
           date,
           ("adjustedClose" - LAG("adjustedClose") OVER (PARTITION BY "ticker" ORDER BY date)) 
           / NULLIF(LAG("adjustedClose") OVER (PARTITION BY "ticker" ORDER BY date), 0) as daily_return
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = ANY($1)
         AND date >= CURRENT_DATE - INTERVAL '30 days'
       )

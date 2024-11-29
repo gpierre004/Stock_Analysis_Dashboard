@@ -1,11 +1,11 @@
 import express from 'express';
-import { updateStockPrices } from '../services/priceUpdater.js';
+import { updatestock_prices } from '../services/priceUpdater.js';
 
 const router = express.Router();
 // Route to trigger the stock data update process
 app.get('/stock-prices', async (req, res) => {
     try {
-      await updateStockPrices();
+      await updatestock_prices();
       res.send('Stock prices updated successfully');
     } catch (error) {
       console.error('Error updating stock prices:', error);

@@ -9,7 +9,7 @@ interface WatchlistItem {
     currentPrice: number;
     priceWhenAdded: number;
     priceChange: number;
-    dateAdded: string;
+    date_added: string;
     reason: string;
     Company: {
         name: string;
@@ -159,7 +159,7 @@ export const Watchlist = () => {
                                             {item.priceChange >= 0 ? '+' : ''}{item.priceChange.toFixed(2)}%
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {new Date(item.dateAdded).toLocaleDateString()}
+                                            {new Date(item.date_added).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-500">{item.reason}</td>
                                     </tr>

@@ -23,7 +23,7 @@ export default (sequelize) => {
         key: 'id'
       }
     },
-    dateAdded: {
+    date_added: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW

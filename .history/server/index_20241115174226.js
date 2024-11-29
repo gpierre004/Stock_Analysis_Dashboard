@@ -24,7 +24,7 @@ app.get('/api/prices/latest', async (req, res) => {
     const { rows } = await pool.query(`
       WITH LatestPrices AS (
         SELECT DISTINCT ON ("ticker") *
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         ORDER BY "ticker", date DESC
       )
       SELECT * FROM LatestPrices
@@ -46,7 +46,7 @@ app.get('/api/analysis/volume/:ticker', async (req, res) => {
           volume,
           AVG(volume) OVER (ORDER BY date ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING) as avg_volume,
           SUM(volume * "adjustedClose") / SUM(volume) as vwap
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = $1
         ORDER BY date DESC
         LIMIT 1
@@ -70,7 +70,7 @@ app.get('/api/analysis/technical/:ticker', async (req, res) => {
           LAG("adjustedClose", 20) OVER (ORDER BY date) as price_20d_ago,
           volume,
           date
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = $1
         ORDER BY date DESC
         LIMIT 20
@@ -101,7 +101,7 @@ app.get('/api/analysis/correlations', async (req, res) => {
           date,
           ("adjustedClose" - LAG("adjustedClose") OVER (PARTITION BY "ticker" ORDER BY date)) 
           / LAG("adjustedClose") OVER (PARTITION BY "ticker" ORDER BY date) as daily_return
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = ANY($1)
         AND date >= CURRENT_DATE - INTERVAL '30 days'
       )

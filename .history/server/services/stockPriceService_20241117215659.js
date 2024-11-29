@@ -2,7 +2,7 @@ import { StockPrice, Company } from '../models/index.js';
 import { Op } from 'sequelize';
 import logger from '../utils/logger.js';
 
-export async function getLatestStockPrices() {
+export async function getLateststock_prices() {
   try {
     const latestPrices = await StockPrice.findAll({
       attributes: ['ticker', 'adjustedClose', 'volume', 'date'],
@@ -45,8 +45,8 @@ export async function getVolumeAnalysis(ticker) {
       attributes: [
         'ticker',
         [sequelize.literal('volume'), 'volume'],
-        [sequelize.literal('(SELECT AVG(volume) FROM "StockPrices" WHERE "ticker" = :ticker)'), 'avg_volume'],
-        [sequelize.literal('(SELECT SUM(volume * adjustedClose) / SUM(volume) FROM "StockPrices" WHERE "ticker" = :ticker ORDER BY date DESC LIMIT 20)'), 'vwap']
+        [sequelize.literal('(SELECT AVG(volume) FROM "stock_prices" WHERE "ticker" = :ticker)'), 'avg_volume'],
+        [sequelize.literal('(SELECT SUM(volume * adjustedClose) / SUM(volume) FROM "stock_prices" WHERE "ticker" = :ticker ORDER BY date DESC LIMIT 20)'), 'vwap']
       ],
       replacements: { ticker },
       raw: true
@@ -75,7 +75,7 @@ export async function getTechnicalIndicators(ticker) {
         [sequelize.literal('adjustedClose'), 'current_price'],
         [sequelize.literal(`
           (SELECT (adjustedClose - LAG(adjustedClose, 20) OVER (ORDER BY date)) / LAG(adjustedClose, 20) OVER (ORDER BY date) * 100 
-           FROM "StockPrices" 
+           FROM "stock_prices" 
            WHERE "ticker" = :ticker 
            ORDER BY date DESC 
            LIMIT 1
@@ -83,7 +83,7 @@ export async function getTechnicalIndicators(ticker) {
         `), 'price_change_20d'],
         [sequelize.literal(`
           (SELECT AVG(adjustedClose) 
-           FROM "StockPrices" 
+           FROM "stock_prices" 
            WHERE "ticker" = :ticker 
            ORDER BY date DESC 
            LIMIT 20
@@ -91,7 +91,7 @@ export async function getTechnicalIndicators(ticker) {
         `), 'sma20'],
         [sequelize.literal(`
           (SELECT AVG(volume) 
-           FROM "StockPrices" 
+           FROM "stock_prices" 
            WHERE "ticker" = :ticker 
            ORDER BY date DESC 
            LIMIT 20

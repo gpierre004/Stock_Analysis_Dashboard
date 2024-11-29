@@ -7,7 +7,7 @@ WITH RankedPrices AS (
     "adjustedClose"::numeric::float8 as "adjustedClose",
     volume::numeric::float8 as volume,
     ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
-  FROM public."StockPrices"
+  FROM public."stock_prices"
   WHERE "adjustedClose" IS NOT NULL
 )
 SELECT 
@@ -32,7 +32,7 @@ WITH LatestData AS (
       ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING
     ) as avg_volume,
     ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
-  FROM public."StockPrices"
+  FROM public."stock_prices"
   WHERE volume IS NOT NULL AND "adjustedClose" IS NOT NULL
 )
 SELECT 
@@ -71,7 +71,7 @@ WITH LatestData AS (
       ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
     ) as avg_volume,
     ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
-  FROM public."StockPrices"
+  FROM public."stock_prices"
   WHERE "adjustedClose" IS NOT NULL AND volume IS NOT NULL
 )
 SELECT 

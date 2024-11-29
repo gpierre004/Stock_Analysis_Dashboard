@@ -9,7 +9,7 @@ interface WatchlistItem {
     currentPrice: number | null;
     priceWhenAdded: number | null;
     priceChange: number | null;
-    dateAdded: string;
+    date_added: string;
     reason: string;
     weekHigh52: number | null;
     percentBelow52WeekHigh: number | null;
@@ -218,7 +218,7 @@ export const Watchlist = () => {
                                             {formatPercentBelow52WeekHigh(item.percentBelow52WeekHigh)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : 'N/A'}
+                                            {item.date_added ? new Date(item.date_added).toLocaleDateString() : 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-500">{item.reason || 'N/A'}</td>
                                     </tr>

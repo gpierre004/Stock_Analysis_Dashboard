@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { 
-  getLatestStockPrices, 
+  getLateststock_prices, 
   getVolumeAnalysis, 
   getTechnicalIndicators 
 } from '../services/stockPriceService.js';
@@ -10,7 +10,7 @@ const router = Router();
 
 router.get('/latest', async (req, res) => {
   try {
-    const latestPrices = await getLatestStockPrices();
+    const latestPrices = await getLateststock_prices();
     res.json(latestPrices);
   } catch (error) {
     logger.error(`Error fetching latest stock prices: ${error.message}`);

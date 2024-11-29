@@ -35,7 +35,7 @@ export async function getWatchList(userId) {
     return await WatchList.findAll({
       where: { UserId: userId },
       include: [{ model: Company, attributes: ['name', 'sector'] }],
-      order: [['dateAdded', 'DESC']]
+      order: [['date_added', 'DESC']]
     });
   } catch (error) {
     throw new Error('Unable to fetch watch list');
@@ -52,12 +52,12 @@ async function getPotentialStocks() {
           [Sequelize.fn('MAX', Sequelize.col('high')), '52WeekHigh'],
           [Sequelize.fn('AVG', Sequelize.col('close')), 'avgClose'],
           [Sequelize.fn('AVG', Sequelize.col('volume')), 'avgVolume'],
-          [Sequelize.literal('(SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'currentPrice'],
+          [Sequelize.literal('(SELECT close FROM "stock_prices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'currentPrice'],
           [Sequelize.fn('MAX', Sequelize.col('high')), '52WeekHigh'],
           [Sequelize.fn('AVG', Sequelize.col('close')), 'avgClose'],
           [Sequelize.fn('AVG', Sequelize.col('volume')), 'avgVolume'],
-          [Sequelize.literal('(SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'currentPrice'],
-          [Sequelize.literal('(SELECT volume FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'currentVolume'],
+          [Sequelize.literal('(SELECT close FROM "stock_prices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'currentPrice'],
+          [Sequelize.literal('(SELECT volume FROM "stock_prices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'currentVolume'],
       ],
       include: [{ 
           model: Company,
@@ -70,26 +70,26 @@ async function getPotentialStocks() {
       having: Sequelize.and(
           // Price is 25% or more below 52-week high
           Sequelize.literal(`
-              (SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
+              (SELECT close FROM "stock_prices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
               <= (1 - 0.25) * MAX("StockPrice"."high")
           `),
           // Price is above 70% of 52-week high (to avoid falling knives)
           Sequelize.literal(`
-              (SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
+              (SELECT close FROM "stock_prices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
               >= 0.70 * MAX("StockPrice"."high")
           `),
           // Volume is increasing (50% above average)
           Sequelize.literal(`
-              (SELECT volume FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)
+              (SELECT volume FROM "stock_prices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)
               >= 1.5 * AVG("StockPrice"."volume")
           `),
       // New condition: Current price must be over \$85
       Sequelize.literal(`
-        (SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
+        (SELECT close FROM "stock_prices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1) 
         > 85
     `)
 ),
-      order: [[Sequelize.literal('MAX("StockPrice"."high") - (SELECT close FROM "StockPrices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'DESC']]
+      order: [[Sequelize.literal('MAX("StockPrice"."high") - (SELECT close FROM "stock_prices" sp WHERE sp."ticker" = "StockPrice"."ticker" ORDER BY date DESC LIMIT 1)'), 'DESC']]
   });
 }
 
@@ -103,7 +103,7 @@ async function addToWatchList(userId, potentialStocks) {
   await WatchList.destroy({
       where: {
           UserId: userId,
-          dateAdded: { [Op.lt]: ninetyDaysAgo }
+          date_added: { [Op.lt]: ninetyDaysAgo }
       }
   });
 
@@ -113,7 +113,7 @@ async function addToWatchList(userId, potentialStocks) {
           where: {
               ticker: stock.ticker,
               UserId: userId,
-              dateAdded: { [Op.gte]: ninetyDaysAgo }
+              date_added: { [Op.gte]: ninetyDaysAgo }
           }
       });
 
@@ -126,7 +126,7 @@ async function addToWatchList(userId, potentialStocks) {
           await WatchList.create({
               ticker: stock.ticker,
               UserId: userId,
-              dateAdded: today,
+              date_added: today,
               reason: `Trading ${percentBelow52WeekHigh}% below 52-week high with ${volumeIncrease}% volume increase`,
               sector: stock.Company.sector,
               industry: stock.Company.industry,
@@ -185,7 +185,7 @@ export async function cleanupWatchList() {
 
     const { count } = await WatchList.destroy({
       where: {
-        dateAdded: { [Op.lt]: ninetyDaysAgo }
+        date_added: { [Op.lt]: ninetyDaysAgo }
       }
     });
 

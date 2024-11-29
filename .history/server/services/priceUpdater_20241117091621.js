@@ -61,7 +61,7 @@ try {
 }
 }
 
-async function updateStockPrices(ticker, stockData) {
+async function updatestock_prices(ticker, stockData) {
 const client = await pool.connect();
 try {
     await client.query('BEGIN');
@@ -70,14 +70,14 @@ try {
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 5);
     await client.query(
-    'DELETE FROM public."StockPrices" WHERE "ticker" = $1 AND date < $2',
+    'DELETE FROM public."stock_prices" WHERE "ticker" = $1 AND date < $2',
     [ticker, threeYearsAgo]
     );
 
     // Insert new records or update if they exist
     for (const data of stockData) {
         await client.query(
-            `INSERT INTO public."StockPrices"(
+            `INSERT INTO public."stock_prices"(
               date, open, high, low, close, volume, "adjustedClose", "ticker", "createdAt", "updatedAt"
             ) VALUES (\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10)
             ON CONFLICT ("ticker", date) DO UPDATE SET
@@ -123,7 +123,7 @@ try {
     console.log(`Processing ${ticker}...`);
     const stockData = await getStockData(ticker, startDate, endDate);
     if (stockData) {
-        await updateStockPrices(ticker, stockData);
+        await updatestock_prices(ticker, stockData);
         console.log(`Updated stock prices for ${ticker}`);
     } else {
         console.log(`Skipping ${ticker} due to data fetch issues.`);
@@ -138,4 +138,4 @@ try {
 
 main();
 
-export { updateStockPrices };
+export { updatestock_prices };

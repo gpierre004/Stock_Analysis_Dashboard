@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import stockAnalysisRoutes from './routes/stockAnalysis.js';
 import portfolioRoutes from './routes/portfolio.js'; // Import the portfolio routes
-import { updateStockPrices, getTickers, getStockData } from './services/priceUpdater.js';
+import { updatestock_prices, getTickers, getStockData } from './services/priceUpdater.js';
 import updateStockPriceRoutes from './routes/updateStockPricesRoutes.js';
 
 dotenv.config();
@@ -35,7 +35,7 @@ app.post('/api/stock-prices/update', async (req, res) => {
               const stockData = await getStockData(ticker, startDate, endDate);
               
               if (stockData) {
-                  await updateStockPrices(ticker, stockData);
+                  await updatestock_prices(ticker, stockData);
                   updatedCount++;
                   console.log(`Updated stock prices for ${ticker}`);
               } else {

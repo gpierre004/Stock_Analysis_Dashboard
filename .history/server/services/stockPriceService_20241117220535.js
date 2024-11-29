@@ -2,9 +2,9 @@ import { StockPrice, Company, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
 import logger from '../utils/logger.js';
 
-export async function getLatestStockPrices() {
+export async function getLateststock_prices() {
   try {
-    // Find the most recent date in the StockPrices table
+    // Find the most recent date in the stock_prices table
     const latestDate = await StockPrice.max('date');
 
     // Fetch the latest prices for each unique ticker on that date
@@ -57,7 +57,7 @@ export async function getVolumeAnalysis(ticker) {
             ROWS BETWEEN 20 PRECEDING AND 1 PRECEDING
           ) as avg_volume,
           ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = :ticker
           AND volume IS NOT NULL
       )
@@ -112,7 +112,7 @@ export async function getTechnicalIndicators(ticker) {
             ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
           ) as avg_volume,
           ROW_NUMBER() OVER (PARTITION BY "ticker" ORDER BY date DESC) as rn
-        FROM public."StockPrices"
+        FROM public."stock_prices"
         WHERE "ticker" = :ticker
           AND adjustedClose IS NOT NULL
       )
